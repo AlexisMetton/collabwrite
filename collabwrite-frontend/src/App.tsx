@@ -4,6 +4,7 @@ import { Footer } from './components/Footer'
 import { HomePage } from './pages/HomePage'
 import { LoginPage } from './pages/LoginPage'
 import { RegisterPage } from './pages/RegisterPage'
+import { ProfilePage } from './pages/ProfilePage'
 
 // Layout pour les pages sans header/footer (login, register)
 function AuthLayout({ children }: { children: React.ReactNode }) {
@@ -36,7 +37,15 @@ function App() {
             </MainLayout>
           }
         />
-        
+        <Route
+          path="/profile"
+          element={
+            <MainLayout>
+              <ProfilePage />
+            </MainLayout>
+          }
+        />
+
         {/* Pages sans Header/Footer (auth) */}
         <Route
           path="/login"
