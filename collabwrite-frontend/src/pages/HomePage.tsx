@@ -93,8 +93,7 @@ export function HomePage() {
             Prêt à commencer ?
           </h2>
           <p className="text-muted-foreground mb-8 max-w-2xl mx-auto px-4">
-            Rejoignez des milliers d'équipes qui font confiance à CollabWrite 
-            pour leur collaboration documentaire.
+            Rejoignez la communauté des utilisateurs qui font confiance à CollabWrite pour collaborer sur leurs documents.
           </p>
           <Link to="/register" className="inline-block">
             <Button size="lg" className="gap-2">

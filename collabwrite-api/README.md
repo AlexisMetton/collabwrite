@@ -85,25 +85,6 @@ JWT_SECRET=your-secret-key
 CORS_ORIGIN=http://localhost:5173
 ```
 
-## 🗄️ Base de données
-
-L'API est conçue pour fonctionner avec MongoDB. Assurez-vous d'avoir MongoDB installé et en cours d'exécution.
-
-## 🚀 Déploiement
-
-### Avec PM2
-```bash
-npm install -g pm2
-npm run build
-pm2 start dist/server.js --name collabwrite-api
-```
-
-### Avec Docker
-```bash
-docker build -t collabwrite-api .
-docker run -p 3000:3000 collabwrite-api
-```
-
 ## 🤝 Contribution
 
 1. Forkez le projet
