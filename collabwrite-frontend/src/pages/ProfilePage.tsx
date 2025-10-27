@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { User, Mail, Calendar, Shield, Save, X, Edit } from "lucide-react"
+import { User, Mail, Calendar, Shield, Save, X, Edit, ShieldCheck } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,6 +14,7 @@ export function ProfilePage() {
   const [currentPassword, setCurrentPassword] = useState("")
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
+  const [is2FAEnabled, setIs2FAEnabled] = useState(false)
 
   const role = "Utilisateur"
   const joinDate = "15 janvier 2024"
@@ -35,6 +36,21 @@ export function ProfilePage() {
     setCurrentPassword("")
     setNewPassword("")
     setConfirmPassword("")
+  }
+
+  const handle2FAToggle = () => {
+    // TODO: Implémenter la logique d'activation/désactivation du 2FA
+    if (is2FAEnabled) {
+      // Désactiver le 2FA
+      if (confirm("Êtes-vous sûr de vouloir désactiver l'authentification à deux facteurs ?")) {
+        setIs2FAEnabled(false)
+        alert("Authentification à deux facteurs désactivée")
+      }
+    } else {
+      // Activer le 2FA
+      alert("Fonctionnalité d'activation du 2FA à implémenter")
+      setIs2FAEnabled(true)
+    }
   }
 
   return (
@@ -135,6 +151,48 @@ export function ProfilePage() {
               )}
             </CardContent>
           </Card>
+
+          {!isEditing && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Sécurité</CardTitle>
+                <CardDescription>
+                  Renforcez la sécurité de votre compte
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 bg-primary/10 rounded-lg shrink-0">
+                      <ShieldCheck className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Authentification à deux facteurs (2FA)</p>
+                      <p className="text-sm text-muted-foreground">
+                        {is2FAEnabled
+                          ? "L'authentification à deux facteurs est activée"
+                          : "Ajoutez une couche de sécurité supplémentaire à votre compte"}
+                      </p>
+                      {is2FAEnabled && (
+                        <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-green-500/10 text-green-600 dark:text-green-400 text-xs font-medium">
+                          <ShieldCheck className="h-3 w-3" />
+                          Activé
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <Button
+                    type="button"
+                    variant={is2FAEnabled ? "outline" : "default"}
+                    size="sm"
+                    onClick={handle2FAToggle}
+                  >
+                    {is2FAEnabled ? "Désactiver" : "Activer"}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {isEditing && (
             <Card>
