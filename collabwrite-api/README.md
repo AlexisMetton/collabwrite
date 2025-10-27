@@ -9,6 +9,7 @@ API backend de l'application CollabWrite, une application de rédaction collabor
 - **TypeScript** - Langage de programmation typé
 - **Nodemon** - Outil de développement pour redémarrer automatiquement le serveur
 - **ts-node** - Exécution TypeScript directe sans compilation
+- **Prisma** - Permet d'intéragir une base de données Postgres avec du Typescript
 
 ## 📋 Prérequis
 
@@ -16,39 +17,16 @@ API backend de l'application CollabWrite, une application de rédaction collabor
 - npm ou yarn
 
 ## 🛠️ Installation
+Vérifier que vous avez Docker Desktop installé sur votre ordinateur.
 
-1. Naviguez vers le dossier API :
-```bash
-cd collabwrite-api
+Ensuite, pour tous installé, faites la commande suivante :
+```
+docker compose up -d
 ```
 
-2. Installez les dépendances :
-```bash
-npm install
+Une fois fait, allez sur l'URL suivant pour voir si l'api est bien en cours d'exécution :
 ```
-
-## 🏃‍♂️ Lancement du projet
-
-### Mode développement
-```bash
-npm run dev
-```
-Le serveur de développement sera accessible sur `http://localhost:3000` (port par défaut)
-
-### Build TypeScript
-```bash
-npm run build
-```
-Compile le code TypeScript vers JavaScript dans le dossier `dist/`
-
-### Lancement en production
-```bash
-npm start
-```
-
-### Tests
-```bash
-npm test
+http://localhost:3000
 ```
 
 ## 📁 Structure du projet
@@ -70,6 +48,8 @@ src/
 
 - **TypeScript** : `tsconfig.json`
 - **Package** : `package.json`
+- **Prisma** : `prisma.config.ts`
+- **Docker** : `docker-compose.yml`
 - **Environment** : `.env` (à créer)
 
 ## 📝 Scripts disponibles
