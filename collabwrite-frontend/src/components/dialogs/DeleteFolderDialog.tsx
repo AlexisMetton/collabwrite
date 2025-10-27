@@ -8,16 +8,14 @@ import {
     DialogFooter
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
 
-type RenameDialogProps = {
+type DeleteFolderDialog = {
     open: boolean
     onOpenChange: (open: boolean) => void
     folderName: string
 }
 
-export function DeleteFolderDialog({ open, onOpenChange, folderName }: RenameDialogProps) {
+export function DeleteFolderDialog({ open, onOpenChange, folderName }: DeleteFolderDialog) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent>
