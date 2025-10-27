@@ -90,10 +90,4 @@ temp/
 # PM2 logs
 .pm2/
 
-# Docker
-.dockerignore
-Dockerfile
-docker-compose.yml
-docker-compose.yaml
-
 /generated/prisma
