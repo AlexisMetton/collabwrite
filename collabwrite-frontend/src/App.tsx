@@ -116,9 +116,7 @@ function App() {
                 </DashboardLayout>
               </ProtectedRoute>
             }
-          />
-
-        
+          />        
           <Route
             path="/admin"
             element={
