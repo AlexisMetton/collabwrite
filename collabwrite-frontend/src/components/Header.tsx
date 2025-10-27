@@ -14,7 +14,7 @@ export function Header() {
             <img 
               src="/logo_collabwrite.png" 
               alt="CollabWrite Logo" 
-              className="h-8 w-auto sm:h-10"
+              className="h-8 w-auto sm:h-12"
             />
           </Link>
           

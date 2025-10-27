@@ -1,4 +1,5 @@
 import { Github } from "lucide-react"
+import { Link } from "react-router-dom"
 
 export function Footer() {
   return (
@@ -7,11 +8,13 @@ export function Footer() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
           <div className="sm:col-span-2 lg:col-span-1">
             <div className="flex items-center gap-2 mb-4">
+            <Link to="/" className="flex items-center gap-2">
               <img 
                 src="/logo_collabwrite.png" 
                 alt="CollabWrite Logo" 
-                className="h-8 w-auto sm:h-10"
+                className="h-8 w-auto sm:h-12"
               />
+            </Link>
             </div>
             <p className="text-sm text-muted-foreground">
               Éditeur de documents collaboratif en temps réel pour votre équipe.
