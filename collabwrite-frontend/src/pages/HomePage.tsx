@@ -7,23 +7,23 @@ export function HomePage() {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Hero Section */}
-      <section className="container mx-auto px-4 py-20 text-center">
-        <h1 className="text-4xl md:text-6xl font-bold mb-6">
+      <section className="container mx-auto px-4 py-12 md:py-20 text-center">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
           Écrivez ensemble,{" "}
           <span className="text-primary">collaborez en temps réel</span>
         </h1>
-        <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+        <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto px-4">
           CollabWrite est une plateforme collaborative permettant à votre équipe de créer 
           et éditer des documents simultanément avec synchronisation instantanée.
         </p>
-        <div className="flex gap-4 justify-center">
-          <Link to="/register">
-            <Button size="lg" className="gap-2">
+        <div className="flex flex-col sm:flex-row gap-4 justify-center px-4">
+          <Link to="/register" className="w-full sm:w-auto">
+            <Button size="lg" className="gap-2 w-full sm:w-auto">
               Commencer gratuitement
             </Button>
           </Link>
-          <Link to="/login">
-            <Button variant="outline" size="lg">
+          <Link to="/login" className="w-full sm:w-auto">
+            <Button variant="outline" size="lg" className="w-full sm:w-auto">
               Se connecter
             </Button>
           </Link>
@@ -31,14 +31,14 @@ export function HomePage() {
       </section>
 
       {/* Features Section */}
-      <section className="container mx-auto px-4 py-20">
-        <h2 className="text-3xl font-bold text-center mb-12">
+      <section className="container mx-auto px-4 py-12 md:py-20">
+        <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8 md:mb-12">
           Pourquoi choisir CollabWrite ?
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <Card className="p-6 hover:shadow-lg transition-shadow">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-primary/10 rounded-lg">
+            <div className="flex items-start gap-3 mb-4">
+              <div className="p-2 bg-primary/10 rounded-lg shrink-0">
                 <Users className="h-6 w-6 text-primary" />
               </div>
               <h3 className="text-lg font-semibold">Collaboration en temps réel</h3>
@@ -49,8 +49,8 @@ export function HomePage() {
           </Card>
 
           <Card className="p-6 hover:shadow-lg transition-shadow">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-primary/10 rounded-lg">
+            <div className="flex items-start gap-3 mb-4">
+              <div className="p-2 bg-primary/10 rounded-lg shrink-0">
                 <Zap className="h-6 w-6 text-primary" />
               </div>
               <h3 className="text-lg font-semibold">Synchronisation instantanée</h3>
@@ -61,8 +61,8 @@ export function HomePage() {
           </Card>
 
           <Card className="p-6 hover:shadow-lg transition-shadow">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-primary/10 rounded-lg">
+            <div className="flex items-start gap-3 mb-4">
+              <div className="p-2 bg-primary/10 rounded-lg shrink-0">
                 <FileText className="h-6 w-6 text-primary" />
               </div>
               <h3 className="text-lg font-semibold">Édition intuitive</h3>
@@ -73,8 +73,8 @@ export function HomePage() {
           </Card>
 
           <Card className="p-6 hover:shadow-lg transition-shadow">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-primary/10 rounded-lg">
+            <div className="flex items-start gap-3 mb-4">
+              <div className="p-2 bg-primary/10 rounded-lg shrink-0">
                 <Shield className="h-6 w-6 text-primary" />
               </div>
               <h3 className="text-lg font-semibold">Sécurisé</h3>
@@ -87,16 +87,16 @@ export function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="container mx-auto px-4 py-20">
-        <Card className="p-12 text-center bg-primary/5">
-          <h2 className="text-3xl font-bold mb-4">
+      <section className="container mx-auto px-4 py-12 md:py-20">
+        <Card className="p-8 md:p-12 text-center bg-primary/5">
+          <h2 className="text-2xl sm:text-3xl font-bold mb-4">
             Prêt à commencer ?
           </h2>
-          <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
+          <p className="text-muted-foreground mb-8 max-w-2xl mx-auto px-4">
             Rejoignez des milliers d'équipes qui font confiance à CollabWrite 
             pour leur collaboration documentaire.
           </p>
-          <Link to="/register">
+          <Link to="/register" className="inline-block">
             <Button size="lg" className="gap-2">
               Créer un compte gratuit
             </Button>
