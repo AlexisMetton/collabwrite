@@ -1,20 +1,27 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import { AuthProvider } from './contexts/AuthContext'
-import { Header } from './components/Header'
-import { Footer } from './components/Footer'
-import { ProtectedRoute } from './components/ProtectedRoute'
-import { AdminRoute } from './components/AdminRoute'
-import { PublicRoute } from './components/PublicRoute'
-import { HomePage } from './pages/HomePage'
-import { LoginPage } from './pages/LoginPage'
-import { RegisterPage } from './pages/RegisterPage'
-import { AdminDashboard } from './pages/AdminDashboard'
-import { DashboardPage } from './pages/DashboardPage'
-import { ProfilePage } from './pages/ProfilePage'
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./contexts/AuthContext";
+
+// Layouts & Components
+import { Header } from "./components/Header";
+import { Footer } from "./components/Footer";
+import { ProtectedRoute } from "./components/ProtectedRoute";
+import { PublicRoute } from "./components/PublicRoute";
+import { AdminRoute } from "./components/AdminRoute";
+import { DashboardLayout } from "./components/layout/DashboardLayout";
+
+// Pages
+import { HomePage } from "./pages/HomePage";
+import { LoginPage } from "./pages/LoginPage";
+import { RegisterPage } from "./pages/RegisterPage";
+import { DashboardPage } from "./pages/DashboardPage";
+import { ProfilePage } from "./pages/ProfilePage";
+import { AdminDashboard } from "./pages/AdminDashboard";
+import DocumentEditorPage from "./pages/DocumentEditorPage";
+import EditorPage from "./pages/EditorPage";
 
 // Layout pour les pages sans header/footer (login, register)
 function AuthLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>
+  return <>{children}</>;
 }
 
 // Layout pour les pages avec header/footer
@@ -22,12 +29,10 @@ function MainLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
-      <main className="flex-grow">
-        {children}
-      </main>
+      <main className="flex-grow">{children}</main>
       <Footer />
     </div>
-  )
+  );
 }
 
 function App() {
@@ -35,7 +40,7 @@ function App() {
     <AuthProvider>
       <Router>
         <Routes>
-          {/* Pages avec Header et Footer */}
+         
           <Route
             path="/"
             element={
@@ -46,8 +51,8 @@ function App() {
               </PublicRoute>
             }
           />
+
           
-          {/* Pages sans Header/Footer (auth) */}
           <Route
             path="/login"
             element={
@@ -68,13 +73,15 @@ function App() {
               </PublicRoute>
             }
           />
+
+         
           <Route
             path="/dashboard"
             element={
               <ProtectedRoute>
-                <MainLayout>
+                <DashboardLayout>
                   <DashboardPage />
-                </MainLayout>
+                </DashboardLayout>
               </ProtectedRoute>
             }
           />
@@ -88,6 +95,30 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+          
+          <Route
+            path="/editor/:pageId"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <EditorPage />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/document/:documentId"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <DocumentEditorPage />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+
+        
           <Route
             path="/admin"
             element={
@@ -101,7 +132,7 @@ function App() {
         </Routes>
       </Router>
     </AuthProvider>
-  )
+  );
 }
 
-export default App
+export default App;

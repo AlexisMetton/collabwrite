@@ -1,31 +1,25 @@
-import { Link, useNavigate } from "react-router-dom"
-import { LogIn, UserPlus, Menu, LogOut, User } from "lucide-react"
+import { Link } from "react-router-dom"
+import { LogIn, UserPlus, Menu, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
 import { useAuth } from "@/contexts/AuthContext"
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const { user, logout } = useAuth()
-  const navigate = useNavigate()
-
-  const handleLogout = async () => {
-    await logout()
-    navigate("/")
-  }
+  const { user } = useAuth()
 
   return (
     <header className="border-b bg-background sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <img 
-              src="/logo_collabwrite.png" 
-              alt="CollabWrite Logo" 
+            <img
+              src="/logo_collabwrite.png"
+              alt="CollabWrite Logo"
               className="h-8 w-auto sm:h-12"
             />
           </Link>
-          
+
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-4">
 
@@ -35,7 +29,7 @@ export function Header() {
               </Link>
             )}
           </nav>
-          
+
           {/* Desktop Buttons */}
           <div className="hidden sm:flex items-center gap-2">
                          {user ? (
@@ -66,7 +60,7 @@ export function Header() {
           </div>
 
           {/* Mobile Menu Button */}
-          <button 
+          <button
             className="sm:hidden"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label="Toggle menu"
