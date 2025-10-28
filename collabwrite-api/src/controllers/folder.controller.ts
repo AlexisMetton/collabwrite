@@ -40,8 +40,31 @@ export const folderController = {
             });
         }
         catch(error){
-            console.error('Erreur lors de l\'ajout du dossier', error);
+            console.error('Erreur lors de l\'ajout du dossier : ', error);
             res.status(500).json({ error: 'Erreur lors de l\'ajout du dossier' });
+        }
+    },
+
+    async deleteFolder(req: Request, res: Response){
+        try{
+            const { name } = req.query;
+
+            if(!name || typeof name != "string") {
+                return res.status(401).json({ error: 'name manquant' });
+            }
+
+            const existingFolder = await folderService.getFolderByName(name);
+            if(!existingFolder){
+                return res.status(404).json({ error: 'Ce dossier n\'existe pas' });
+            }
+
+            await folderService.deleteFolder(name);
+
+            res.status(204);
+        }
+        catch(error){
+            console.error('Erreur lors de la suppression d\'un dossier : ', error);
+            res.status(500).json({ error: 'Erreur lors de la suppression d\'un dossier' });
         }
     }
 }

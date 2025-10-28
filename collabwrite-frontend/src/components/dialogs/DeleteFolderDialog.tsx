@@ -12,10 +12,18 @@ import { Button } from "@/components/ui/button"
 type DeleteFolderDialog = {
     open: boolean
     onOpenChange: (open: boolean) => void
-    folderName: string
+    folderName: string,
+    onDeleteFolder?: (name: string) => void
 }
 
-export function DeleteFolderDialog({ open, onOpenChange, folderName }: DeleteFolderDialog) {
+export function DeleteFolderDialog({ open, onOpenChange, folderName, onDeleteFolder }: DeleteFolderDialog) {
+    const handleDelete = () => {
+        if(onDeleteFolder && folderName.trim()){
+            onDeleteFolder(folderName.trim())
+            onOpenChange(false);
+        }
+    }
+
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent>
@@ -27,6 +35,7 @@ export function DeleteFolderDialog({ open, onOpenChange, folderName }: DeleteFol
                     <DialogClose asChild>
                         <Button type="button" onClick={() => onOpenChange(false)}>Fermer</Button>
                     </DialogClose>
+                    <Button onClick={handleDelete}>Supprimer</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

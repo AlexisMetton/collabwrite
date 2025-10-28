@@ -6,6 +6,11 @@ export const folderService = {
         return result.rows;
     },
 
+    async getFolderByName(name: string){
+        const result = await pool.query(`SELECT * FROM folders WHERE name = $1`, [name]);
+        return result.rows || null;
+    },
+
     async createFolder(userId: string, name: string) {
         const resultId = await pool.query('SELECT gen_random_uuid() as id');
         const id = resultId.rows[0].id;
@@ -18,5 +23,10 @@ export const folderService = {
         );
 
         return result.rows[0];
+    },
+
+    async deleteFolder(name: string) {
+        const result = await pool.query('DELETE FROM folders WHERE name = $1', [name]);
+        return result.rows;
     }
 }

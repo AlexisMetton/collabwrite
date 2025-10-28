@@ -12,4 +12,8 @@ router.post('/add', authenticateToken, (req, res) => {
     folderController.createFolder(req as any, res);
 });
 
+router.delete('/delete', authenticateToken, (req, res) => {
+    folderController.deleteFolder(req as any, res);
+});
+
 export default router;

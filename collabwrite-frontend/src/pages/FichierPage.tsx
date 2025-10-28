@@ -49,101 +49,6 @@ export type Dossier = {
     updated_at: string
 }
 
-export const columns: ColumnDef<Dossier>[] = [
-  {
-    accessorKey: "name",
-    header: ({ column }) => {
-        return (
-            <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            >
-                Nom
-                <ArrowUpDown />
-            </Button>
-        )
-    },
-    cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("name")}</div>
-    ),
-  },
-  {
-    accessorKey: "full_name",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Propriétaire
-          <ArrowUpDown />
-        </Button>
-      )
-    },
-    cell: ({ row }) => <div className="capitalize">{row.getValue("full_name")}</div>,
-  },
-  {
-    accessorKey: "created_at",
-    header: "Date de création",
-    cell: ({ row }) => <div className="capitalize">{row.getValue("created_at")}</div>
-  },
-  {
-    accessorKey: "updated_at",
-    header: "Date de la dernière modification",
-    cell: ({ row }) => <div className="capitalize">{row.getValue("updated_at")}</div>
-  },
-  {
-    id: "actions",
-    enableHiding: false,
-    cell: ({ row }) => {
-        const [modifier, setModifier] = useState(false);
-        const [supprimer, setSupprimer] = useState(false);
-        const [nomDossier, setNomDossier] = useState("");
-        return (
-            <>
-                <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="h-8 w-8 p-0">
-                    <span className="sr-only">Open menu</span>
-                    <MoreHorizontal />
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onSelect={e => {
-                        e.preventDefault()
-                        setModifier(true)
-                        setNomDossier(row.original.name)
-                    }}>
-                        Renommer
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={e => {
-                        e.preventDefault()
-                        setSupprimer(true)
-                        setNomDossier(row.original.name)
-                    }}
-                    >Supprimer
-                    </DropdownMenuItem>
-                </DropdownMenuContent>
-                </DropdownMenu>
-
-                <RenameFolderDialog 
-                    open={modifier}
-                    onOpenChange={setModifier}
-                    folderName={nomDossier}
-                />
-                <DeleteFolderDialog 
-                    open={supprimer}
-                    onOpenChange={setSupprimer}
-                    folderName={nomDossier}
-                />
-            </>
-        )
-    },
-  },
-]
-
 export function FichierPage() {
   const [error, setError] = useState("");
 
@@ -157,6 +62,102 @@ export function FichierPage() {
   const [rowSelection, setRowSelection] = React.useState({})
 
   const [data, setData] = useState([]);
+
+  const columns: ColumnDef<Dossier>[] = [
+    {
+      accessorKey: "name",
+      header: ({ column }) => {
+          return (
+              <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+              >
+                  Nom
+                  <ArrowUpDown />
+              </Button>
+          )
+      },
+      cell: ({ row }) => (
+        <div className="capitalize">{row.getValue("name")}</div>
+      ),
+    },
+    {
+      accessorKey: "full_name",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Propriétaire
+            <ArrowUpDown />
+          </Button>
+        )
+      },
+      cell: ({ row }) => <div className="capitalize">{row.getValue("full_name")}</div>,
+    },
+    {
+      accessorKey: "created_at",
+      header: "Date de création",
+      cell: ({ row }) => <div className="capitalize">{row.getValue("created_at")}</div>
+    },
+    {
+      accessorKey: "updated_at",
+      header: "Date de la dernière modification",
+      cell: ({ row }) => <div className="capitalize">{row.getValue("updated_at")}</div>
+    },
+    {
+      id: "actions",
+      enableHiding: false,
+      cell: ({ row }) => {
+          const [modifier, setModifier] = useState(false);
+          const [supprimer, setSupprimer] = useState(false);
+          const [nomDossier, setNomDossier] = useState("");
+          return (
+              <>
+                  <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-8 w-8 p-0">
+                      <span className="sr-only">Open menu</span>
+                      <MoreHorizontal />
+                      </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onSelect={e => {
+                          e.preventDefault()
+                          setModifier(true)
+                          setNomDossier(row.original.name)
+                      }}>
+                          Renommer
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onSelect={e => {
+                          e.preventDefault()
+                          setSupprimer(true)
+                          setNomDossier(row.original.name)
+                      }}
+                      >Supprimer
+                      </DropdownMenuItem>
+                  </DropdownMenuContent>
+                  </DropdownMenu>
+
+                  <RenameFolderDialog 
+                      open={modifier}
+                      onOpenChange={setModifier}
+                      folderName={nomDossier}
+                  />
+                  <DeleteFolderDialog 
+                      open={supprimer}
+                      onOpenChange={setSupprimer}
+                      folderName={nomDossier}
+                      onDeleteFolder={(name) => deleteFolder({ name })}
+                  />
+              </>
+          )
+      },
+    },
+  ];
 
   const table = useReactTable({
     data,
@@ -191,6 +192,18 @@ export function FichierPage() {
   const createFolder = async (data: FolderData) => {
     try{
       const response = await folderService.createFolder(data);
+      console.log(response);
+      getFolders();
+    }
+    catch (err: unknown){
+      const error = err as { response?: { data?: { error?: string } } }
+      setError(error.response?.data?.error || "Erreur lors de la récupération des dossiers.")
+    }
+  }
+
+  const deleteFolder = async (data: FolderData) => {
+    try{
+      const response = await folderService.deleteFolder(data);
       console.log(response);
       getFolders();
     }
