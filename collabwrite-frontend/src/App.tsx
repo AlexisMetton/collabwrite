@@ -7,6 +7,7 @@ import { PublicRoute } from './components/PublicRoute'
 import { HomePage } from './pages/HomePage'
 import { LoginPage } from './pages/LoginPage'
 import { RegisterPage } from './pages/RegisterPage'
+import { AdminDashboard } from './pages/AdminDashboard'
 import { DashboardPage } from './pages/DashboardPage'
 import { ProfilePage } from './pages/ProfilePage'
 
@@ -86,6 +87,16 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+          path="/admin"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <AdminDashboard />
+              </MainLayout>
+             </ProtectedRoute>
+          }
+        />
         </Routes>
       </Router>
     </AuthProvider>
