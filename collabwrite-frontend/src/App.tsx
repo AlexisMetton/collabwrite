@@ -95,8 +95,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-
-          
           <Route
             path="/editor/:pageId"
             element={
