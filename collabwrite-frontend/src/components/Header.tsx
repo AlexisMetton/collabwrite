@@ -1,10 +1,18 @@
-import { Link } from "react-router-dom"
-import { LogIn, UserPlus, Menu } from "lucide-react"
+import { Link, useNavigate } from "react-router-dom"
+import { LogIn, UserPlus, Menu, LogOut, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
+import { useAuth } from "@/contexts/AuthContext"
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
+
+  const handleLogout = async () => {
+    await logout()
+    navigate("/")
+  }
 
   return (
     <header className="border-b bg-background sticky top-0 z-50">
@@ -27,18 +35,31 @@ export function Header() {
           
           {/* Desktop Buttons */}
           <div className="hidden sm:flex items-center gap-2">
-            <Link to="/login">
-              <Button variant="ghost" size="sm" className="gap-2">
-                <LogIn className="h-4 w-4" />
-                <span className="hidden md:inline">Connexion</span>
-              </Button>
-            </Link>
-            <Link to="/register">
-              <Button size="sm" className="gap-2">
-                <UserPlus className="h-4 w-4" />
-                <span className="hidden md:inline">Inscription</span>
-              </Button>
-            </Link>
+                         {user ? (
+               <>
+                 <Link to="/profile">
+                   <Button variant="ghost" size="sm" className="gap-2">
+                     <User className="h-4 w-4" />
+                     <span className="hidden md:inline">{user.fullName}</span>
+                   </Button>
+                 </Link>
+               </>
+             ) : (
+              <>
+                <Link to="/login">
+                  <Button variant="ghost" size="sm" className="gap-2">
+                    <LogIn className="h-4 w-4" />
+                    <span className="hidden md:inline">Connexion</span>
+                  </Button>
+                </Link>
+                <Link to="/register">
+                  <Button size="sm" className="gap-2">
+                    <UserPlus className="h-4 w-4" />
+                    <span className="hidden md:inline">Inscription</span>
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -54,22 +75,35 @@ export function Header() {
         {/* Mobile Menu */}
         {isMenuOpen && (
           <div className="sm:hidden mt-4 pb-4 border-t pt-4 space-y-2">
-            <Link to="/" className="block px-4 py-2 hover:bg-muted rounded-md">
+            {/*<Link to="/" className="block px-4 py-2 hover:bg-muted rounded-md">
               Accueil
-            </Link>
+            </Link>*/}
             <div className="flex flex-col gap-2 px-4">
-              <Link to="/login">
-                <Button variant="outline" size="sm" className="w-full gap-2">
-                  <LogIn className="h-4 w-4" />
-                  Connexion
-                </Button>
-              </Link>
-              <Link to="/register">
-                <Button size="sm" className="w-full gap-2">
-                  <UserPlus className="h-4 w-4" />
-                  Inscription
-                </Button>
-              </Link>
+                {user ? (
+                 <>
+                   <Link to="/profile">
+                     <Button variant="outline" size="sm" className="w-full gap-2">
+                       <User className="h-4 w-4" />
+                       {user.fullName}
+                     </Button>
+                   </Link>
+                 </>
+                ) : (
+                <>
+                  <Link to="/login">
+                    <Button variant="outline" size="sm" className="w-full gap-2">
+                      <LogIn className="h-4 w-4" />
+                      Connexion
+                    </Button>
+                  </Link>
+                  <Link to="/register">
+                    <Button size="sm" className="w-full gap-2">
+                      <UserPlus className="h-4 w-4" />
+                      Inscription
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         )}

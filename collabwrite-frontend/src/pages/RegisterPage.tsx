@@ -1,28 +1,43 @@
 import { useState } from "react"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { UserPlus } from "lucide-react"
+import { useAuth } from "@/contexts/AuthContext"
 
 export function RegisterPage() {
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
+  const [error, setError] = useState("")
+  const [loading, setLoading] = useState(false)
+  const { register } = useAuth()
+  const navigate = useNavigate()
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     // Validation
     if (password !== confirmPassword) {
-      alert("Les mots de passe ne correspondent pas")
+      setError("Les mots de passe ne correspondent pas")
       return
     }
 
-    // TODO: Implémenter la logique d'inscription
-    console.log("Register:", { name, email, password })
+    setError("")
+    setLoading(true)
+
+    try {
+      await register({ fullName: name, email, password })
+      navigate("/dashboard")
+    } catch (err) {
+      const error = err as { response?: { data?: { error?: string } } };
+      setError(error.response?.data?.error || "Erreur d'inscription")
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -94,9 +109,14 @@ export function RegisterPage() {
                   minLength={8}
                 />
               </div>
-              <Button type="submit" className="w-full gap-2">
+              {error && (
+                <div className="text-sm text-red-500 bg-red-50 p-3 rounded">
+                  {error}
+                </div>
+              )}
+              <Button type="submit" className="w-full gap-2" disabled={loading}>
                 <UserPlus className="h-4 w-4" />
-                Créer un compte
+                {loading ? "Création..." : "Créer un compte"}
               </Button>
             </CardContent>
           </form>
