@@ -1,9 +1,14 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { AuthProvider } from './contexts/AuthContext'
 import { Header } from './components/Header'
 import { Footer } from './components/Footer'
+import { ProtectedRoute } from './components/ProtectedRoute'
+import { PublicRoute } from './components/PublicRoute'
 import { HomePage } from './pages/HomePage'
 import { LoginPage } from './pages/LoginPage'
 import { RegisterPage } from './pages/RegisterPage'
+import { DashboardPage } from './pages/DashboardPage'
+import { ProfilePage } from './pages/ProfilePage'
 
 // Layout pour les pages sans header/footer (login, register)
 function AuthLayout({ children }: { children: React.ReactNode }) {
@@ -25,37 +30,65 @@ function MainLayout({ children }: { children: React.ReactNode }) {
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        {/* Pages avec Header et Footer */}
-        <Route
-          path="/"
-          element={
-            <MainLayout>
-              <HomePage />
-            </MainLayout>
-          }
-        />
-        
-        {/* Pages sans Header/Footer (auth) */}
-        <Route
-          path="/login"
-          element={
-            <AuthLayout>
-              <LoginPage />
-            </AuthLayout>
-          }
-        />
-        <Route
-          path="/register"
-          element={
-            <AuthLayout>
-              <RegisterPage />
-            </AuthLayout>
-          }
-        />
-      </Routes>
-    </Router>
+    <AuthProvider>
+      <Router>
+        <Routes>
+          {/* Pages avec Header et Footer */}
+          <Route
+            path="/"
+            element={
+              <PublicRoute>
+                <MainLayout>
+                  <HomePage />
+                </MainLayout>
+              </PublicRoute>
+            }
+          />
+          
+          {/* Pages sans Header/Footer (auth) */}
+          <Route
+            path="/login"
+            element={
+              <PublicRoute>
+                <AuthLayout>
+                  <LoginPage />
+                </AuthLayout>
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/register"
+            element={
+              <PublicRoute>
+                <AuthLayout>
+                  <RegisterPage />
+                </AuthLayout>
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <DashboardPage />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <ProfilePage />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </Router>
+    </AuthProvider>
   )
 }
 
