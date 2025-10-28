@@ -1,13 +1,18 @@
 FROM node:24-alpine
 
+RUN apk add --no-cache wget
+
 WORKDIR /app
 
-COPY package.json /app
+COPY package.json package-lock.json ./
+COPY tsconfig.json ./
 
 RUN npm install
 
-COPY prisma ./prisma/
+COPY src ./src
+COPY server.ts ./
 
-COPY . .
+# Compiler TypeScript
+RUN npx tsc
 
-CMD ["sh", "-c", "npx prisma generate && node server.ts"]
+CMD ["node", "server.js"]
