@@ -1,18 +1,21 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import { AuthProvider } from './contexts/AuthContext'
-import { Header } from './components/Header'
-import { Footer } from './components/Footer'
-import { ProtectedRoute } from './components/ProtectedRoute'
-import { PublicRoute } from './components/PublicRoute'
-import { HomePage } from './pages/HomePage'
-import { LoginPage } from './pages/LoginPage'
-import { RegisterPage } from './pages/RegisterPage'
-import { DashboardPage } from './pages/DashboardPage'
-import { ProfilePage } from './pages/ProfilePage'
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
+import { Footer } from "./components/Footer";
+import { Header } from "./components/Header";
+import { DashboardLayout } from "./components/layout/DashboardLayout";
+import { ProtectedRoute } from "./components/ProtectedRoute";
+import { PublicRoute } from "./components/PublicRoute";
+import { AuthProvider } from "./contexts/AuthContext";
+import { DashboardPage } from "./pages/DashboardPage";
+import { HomePage } from "./pages/HomePage";
+import { LoginPage } from "./pages/LoginPage";
+import { ProfilePage } from "./pages/ProfilePage";
+import { RegisterPage } from "./pages/RegisterPage";
+import DocumentEditorPage from "./pages/DocumentEditorPage";
+import EditorPage from "./pages/EditorPage";
 
 // Layout pour les pages sans header/footer (login, register)
 function AuthLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>
+  return <>{children}</>;
 }
 
 // Layout pour les pages avec header/footer
@@ -20,12 +23,10 @@ function MainLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
-      <main className="flex-grow">
-        {children}
-      </main>
+      <main className="flex-grow">{children}</main>
       <Footer />
     </div>
-  )
+  );
 }
 
 function App() {
@@ -44,7 +45,7 @@ function App() {
               </PublicRoute>
             }
           />
-          
+
           {/* Pages sans Header/Footer (auth) */}
           <Route
             path="/login"
@@ -70,9 +71,9 @@ function App() {
             path="/dashboard"
             element={
               <ProtectedRoute>
-                <MainLayout>
+                <DashboardLayout>
                   <DashboardPage />
-                </MainLayout>
+                </DashboardLayout>
               </ProtectedRoute>
             }
           />
@@ -86,10 +87,30 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/editor/:pageId"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <EditorPage />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/document/:documentId"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <DocumentEditorPage />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </Router>
     </AuthProvider>
-  )
+  );
 }
 
-export default App
+export default App;
