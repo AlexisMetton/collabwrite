@@ -1,6 +1,6 @@
 import { useDocumentStore } from "@/hooks/useDocumentStore";
 import { FileText } from "lucide-react";
-import React from "react";
+import React, { useMemo } from "react";
 import { EmptyState } from "../ui/EmptyState";
 import { DocumentItem } from "./DocumentItem";
 import { FolderItem } from "./FolderItem";
@@ -50,24 +50,84 @@ export const FolderList: React.FC<FolderListProps> = ({
     );
   }
 
-  // Filtrer les dossiers qui contiennent des fichiers correspondant à la recherche
-  const visibleFolders = folders.filter((folder) => {
-    if (!searchQuery) return true;
+  // Mémoriser les résultats de recherche et filtrage pour améliorer les performances
+  const { visibleFolders, rootFiles } = useMemo(() => {
+    const searchLower = searchQuery.toLowerCase();
 
-    const folderFiles = files.filter((file) => file.folderId === folder.id);
-    const matchingFiles = folderFiles.filter(
-      (file) =>
-        file.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        file.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        file.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (file.description &&
-          file.description.toLowerCase().includes(searchQuery.toLowerCase()))
-    );
+    // Filtrer les dossiers qui contiennent des fichiers correspondant à la recherche
+    const filteredFolders = folders.filter((folder) => {
+      if (!searchQuery) return true;
 
-    return matchingFiles.length > 0;
-  });
+      const folderFiles = files.filter((file) => file.folderId === folder.id);
+      const matchingFiles = folderFiles.filter(
+        (file) =>
+          file.name.toLowerCase().includes(searchLower) ||
+          file.content.toLowerCase().includes(searchLower) ||
+          file.author.toLowerCase().includes(searchLower) ||
+          (file.description &&
+            file.description.toLowerCase().includes(searchLower))
+      );
 
-  if (visibleFolders.length === 0 && searchQuery) {
+      return matchingFiles.length > 0;
+    });
+
+    // Récupérer les fichiers sans dossier (racine)
+    let filteredRootFiles = files.filter((file) => file.folderId === null);
+
+    // Appliquer le filtre de type
+    if (fileTypeFilter !== "all") {
+      filteredRootFiles =
+        fileTypeFilter === "image"
+          ? filteredRootFiles.filter((file) => file.fileType === "png")
+          : filteredRootFiles.filter((file) => file.fileType === fileTypeFilter);
+    }
+
+    // Appliquer la recherche
+    if (searchQuery) {
+      filteredRootFiles = filteredRootFiles.filter(
+        (file) =>
+          file.name.toLowerCase().includes(searchLower) ||
+          file.content.toLowerCase().includes(searchLower) ||
+          file.author.toLowerCase().includes(searchLower) ||
+          (file.description &&
+            file.description.toLowerCase().includes(searchLower))
+      );
+    }
+
+    // Appliquer le tri
+    filteredRootFiles.sort((a, b) => {
+      let aValue: string | number, bValue: string | number;
+
+      switch (sortBy) {
+        case "name":
+          aValue = a.name.toLowerCase();
+          bValue = b.name.toLowerCase();
+          break;
+        case "createdAt":
+          aValue = a.createdAt.getTime();
+          bValue = b.createdAt.getTime();
+          break;
+        case "updatedAt":
+          aValue = a.updatedAt.getTime();
+          bValue = b.updatedAt.getTime();
+          break;
+        default:
+          return 0;
+      }
+
+      if (aValue < bValue) return sortOrder === "asc" ? -1 : 1;
+      if (aValue > bValue) return sortOrder === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    return {
+      visibleFolders: filteredFolders,
+      rootFiles: filteredRootFiles,
+    };
+  }, [files, folders, searchQuery, fileTypeFilter, sortBy, sortOrder]);
+
+  // Vérifier s'il y a des résultats (dossiers OU fichiers racine)
+  if (visibleFolders.length === 0 && rootFiles.length === 0 && searchQuery) {
     return (
       <div className="p-4">
         <EmptyState
@@ -77,55 +137,6 @@ export const FolderList: React.FC<FolderListProps> = ({
       </div>
     );
   }
-
-  // Récupérer les fichiers sans dossier (racine)
-  let rootFiles = files.filter((file) => file.folderId === null);
-
-  // Appliquer le filtre de type
-  if (fileTypeFilter !== "all") {
-    rootFiles =
-      fileTypeFilter === "image"
-        ? rootFiles.filter((file) => file.fileType === "png")
-        : rootFiles.filter((file) => file.fileType === fileTypeFilter);
-  }
-
-  // Appliquer la recherche
-  if (searchQuery) {
-    rootFiles = rootFiles.filter(
-      (file) =>
-        file.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        file.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        file.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (file.description &&
-          file.description.toLowerCase().includes(searchQuery.toLowerCase()))
-    );
-  }
-
-  // Appliquer le tri
-  rootFiles.sort((a, b) => {
-    let aValue: string | number, bValue: string | number;
-
-    switch (sortBy) {
-      case "name":
-        aValue = a.name.toLowerCase();
-        bValue = b.name.toLowerCase();
-        break;
-      case "createdAt":
-        aValue = a.createdAt.getTime();
-        bValue = b.createdAt.getTime();
-        break;
-      case "updatedAt":
-        aValue = a.updatedAt.getTime();
-        bValue = b.updatedAt.getTime();
-        break;
-      default:
-        return 0;
-    }
-
-    if (aValue < bValue) return sortOrder === "asc" ? -1 : 1;
-    if (aValue > bValue) return sortOrder === "asc" ? 1 : -1;
-    return 0;
-  });
 
   // Drag and drop handlers pour la zone racine
   const handleDragOverRoot = (e: React.DragEvent) => {

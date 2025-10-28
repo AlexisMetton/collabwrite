@@ -112,12 +112,16 @@ export const FolderItem: React.FC<FolderItemProps> = ({
 
   // Auto-expand le dossier s'il y a une recherche/filtre et qu'il contient des fichiers correspondants
   React.useEffect(() => {
-    if ((searchQuery || fileTypeFilter !== "all") && folderFiles.length > 0) {
+    const hasSearchOrFilter = searchQuery || fileTypeFilter !== "all";
+    const hasMatchingFiles = folderFiles.length > 0;
+
+    if (hasSearchOrFilter && hasMatchingFiles) {
       setIsExpanded(true);
     } else if (!searchQuery && fileTypeFilter === "all") {
       setIsExpanded(false);
     }
-  }, [searchQuery, fileTypeFilter, folderFiles.length]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery, fileTypeFilter]);
 
   const handleToggleExpanded = () => {
     setIsExpanded(!isExpanded);

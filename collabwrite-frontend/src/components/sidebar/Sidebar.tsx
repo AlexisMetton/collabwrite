@@ -53,7 +53,7 @@ export const Sidebar: React.FC = () => {
 
     debounceTimerRef.current = setTimeout(() => {
       searchFiles(value);
-    }, 300);
+    }, 500);
   };
 
   // Nettoyer le timer au démontage
@@ -162,6 +162,13 @@ export const Sidebar: React.FC = () => {
         </div>
       </div>
       <div className="flex-1 overflow-auto">
+        {searchQuery && (
+          <div className="p-4 pb-2">
+            <div className="text-sm text-muted-foreground">
+              Résultats pour "<span className="font-semibold text-foreground">{searchQuery}</span>"
+            </div>
+          </div>
+        )}
         <FolderList fileTypeFilter={fileTypeFilter} />
       </div>
 
