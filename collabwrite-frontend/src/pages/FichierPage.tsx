@@ -17,7 +17,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table"
 import { ArrowUpDown, MoreHorizontal } from "lucide-react"
-import type { FolderData } from "../services/folder.service";
+import type { FolderData, FolderUpdateData } from "../services/folder.service";
 import { Button } from "@/components/ui/button"
 import { AddFolderDialog } from "@/components/dialogs/AddFolderDialog";
 import { RenameFolderDialog } from "@/components/dialogs/RenameFolderDialog"
@@ -146,6 +146,7 @@ export function FichierPage() {
                       open={modifier}
                       onOpenChange={setModifier}
                       folderName={nomDossier}
+                      onUpdateFolder={(oldname, newname) => updateFolder({ oldname, newname })}
                   />
                   <DeleteFolderDialog 
                       open={supprimer}
@@ -192,6 +193,18 @@ export function FichierPage() {
   const createFolder = async (data: FolderData) => {
     try{
       const response = await folderService.createFolder(data);
+      console.log(response);
+      getFolders();
+    }
+    catch (err: unknown){
+      const error = err as { response?: { data?: { error?: string } } }
+      setError(error.response?.data?.error || "Erreur lors de la récupération des dossiers.")
+    }
+  }
+
+  const updateFolder = async (data: FolderUpdateData) => {
+    try{
+      const response = await folderService.updateFolder(data);
       console.log(response);
       getFolders();
     }

@@ -4,6 +4,11 @@ export interface FolderData {
     name: string;
 }
 
+export interface FolderUpdateData {
+    oldname: string;
+    newname: string;
+}
+
 export const folderService = {
     async getFolders() {
         const response = await api.get('/folder/all');
@@ -12,6 +17,12 @@ export const folderService = {
 
     async createFolder(data: FolderData) {
         const response = await api.post('/folder/add', data);
+        return response.data;
+    },
+
+    async updateFolder(data: FolderUpdateData){
+        console.log(data);
+        const response = await api.put('/folder/update', data);
         return response.data;
     },
 

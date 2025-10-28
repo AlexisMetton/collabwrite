@@ -21,7 +21,7 @@ type AddDialogProps = {
 export function AddFolderDialog({ open, onOpenChange, onAddFolder }: AddDialogProps) {
     const [name, setName] = useState("");
 
-    const handleAdd = () =>  {
+    const handleAdd = () => {
         if(onAddFolder && name.trim()){
             onAddFolder(name.trim())
             setName("")

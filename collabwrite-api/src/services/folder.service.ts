@@ -25,6 +25,11 @@ export const folderService = {
         return result.rows[0];
     },
 
+    async updateFolder(oldname: string, newname: string){
+        const result = await pool.query('UPDATE folders SET name = $1 WHERE name = $2', [newname, oldname]);
+        return result.rows;
+    },
+
     async deleteFolder(name: string) {
         const result = await pool.query('DELETE FROM folders WHERE name = $1', [name]);
         return result.rows;

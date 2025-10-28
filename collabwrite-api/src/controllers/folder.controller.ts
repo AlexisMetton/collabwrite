@@ -1,7 +1,7 @@
 import { type Request, type Response } from 'express';
 import type { AuthRequest } from '../middleware/auth.middleware.js';
 import { folderService } from '../services/folder.service.js';
-import type { FolderDTO } from '../types/auth.types.js';
+import type { FolderDTO, FolderUpdateDTO } from '../types/folder.types.js';
 
 export const folderController = {
     async getFolders(req: AuthRequest, res: Response){
@@ -47,6 +47,25 @@ export const folderController = {
         catch(error){
             console.error('Erreur lors de l\'ajout du dossier : ', error);
             res.status(500).json({ error: 'Erreur lors de l\'ajout du dossier' });
+        }
+    },
+
+    async updateFolder(req: FolderUpdateDTO, res: Response){
+        try{
+            const { oldname, newname } = req.body;
+
+            const existingFolder = await folderService.getFolderByName(newname);
+            if(existingFolder.length != 0){
+                return res.status(400).json({ error: 'Le dossier existe déjà' });
+            }
+
+            await folderService.updateFolder(oldname, newname);
+
+            res.status(200);
+        }
+        catch(error){
+            console.error('Erreur lors de la modification d\'un dossier : ', error);
+            res.status(500).json({ error: 'Erreur lors de la modification d\'un dossier' });
         }
     },
 
