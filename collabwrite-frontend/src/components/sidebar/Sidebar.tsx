@@ -92,9 +92,9 @@ export const Sidebar: React.FC = () => {
     setShowCreateFolderModal(true);
   };
 
-  const handleConfirmCreateFolder = async (name: string) => {
+  const handleConfirmCreateFolder = async (name: string, color: string) => {
     try{
-      await folderService.createFolder({ name });
+      await folderService.createFolder({ name, color });
     }
     catch (err: unknown){
       const error = err as { response?: { data?: { error?: string } } }
