@@ -58,6 +58,7 @@ export const authService = {
     const newAccessToken = generateAccessToken({
       userId: decoded.userId,
       email: decoded.email,
+      role: decoded.role,
     });
 
     return newAccessToken;

@@ -28,9 +28,12 @@ export function Header() {
           
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-4">
-            {/*<Link to="/" className="text-sm font-medium hover:text-primary transition-colors">
-              Accueil
-            </Link>*/}
+
+            {user && user.role === 'admin' && (
+              <Link to="/admin" className="text-sm font-medium hover:text-primary transition-colors">
+                Gestion des utilisateurs
+              </Link>
+            )}
           </nav>
           
           {/* Desktop Buttons */}
@@ -79,6 +82,13 @@ export function Header() {
               Accueil
             </Link>*/}
             <div className="flex flex-col gap-2 px-4">
+                {user && user.role === 'admin' && (
+                  <Link to="/admin" onClick={() => setIsMenuOpen(false)}>
+                    <Button variant="ghost" size="sm" className="w-full gap-2">
+                      Admin
+                    </Button>
+                  </Link>
+                )}
                 {user ? (
                  <>
                    <Link to="/profile">

@@ -1,108 +1,149 @@
-import { useState } from "react"
-import { UserPlus, Lock, Unlock, Search, X, ShieldCheck, ShieldOff } from "lucide-react"
+import { useState, useEffect } from "react"
+import { UserPlus, Lock, Unlock, Search, X, ShieldCheck, ShieldOff, Edit, Save, AlertCircle } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { adminService } from "@/services/admin.service"
+import type { AdminUser, CreateUserData, UpdateUserData } from "@/services/admin.service"
 
-interface User {
-  id: number
+interface User extends AdminUser {
   name: string
-  email: string
-  role: string
-  isBlocked: boolean
   has2FA: boolean
-  createdAt: string
 }
 
 export function AdminDashboard() {
   const [showAddUserForm, setShowAddUserForm] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
+  const [users, setUsers] = useState<User[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [editingUser, setEditingUser] = useState<string | null>(null)
 
   const [newUserName, setNewUserName] = useState("")
   const [newUserEmail, setNewUserEmail] = useState("")
   const [newUserPassword, setNewUserPassword] = useState("")
-  const [newUserRole, setNewUserRole] = useState("Utilisateur")
+  const [newUserRole, setNewUserRole] = useState("user")
 
-  // TODO: Remplacer par les vraies données
-  const [users, setUsers] = useState<User[]>([
-    {
-      id: 1,
-      name: "Jean Dupont",
-      email: "jean.dupont@exemple.com",
-      role: "Utilisateur",
-      isBlocked: false,
-      has2FA: true,
-      createdAt: "15 janvier 2025"
-    },
-    {
-      id: 2,
-      name: "Marie Martin",
-      email: "marie.martin@exemple.com",
-      role: "Utilisateur",
-      isBlocked: false,
-      has2FA: false,
-      createdAt: "20 janvier 2025"
-    },
-    {
-      id: 3,
-      name: "Pierre Durand",
-      email: "pierre.durand@exemple.com",
-      role: "Admin",
-      isBlocked: false,
-      has2FA: true,
-      createdAt: "10 janvier 2025"
-    },
-    {
-      id: 4,
-      name: "Sophie Bernard",
-      email: "sophie.bernard@exemple.com",
-      role: "Utilisateur",
-      isBlocked: true,
-      has2FA: false,
-      createdAt: "5 janvier 2025"
-    }
-  ])
+  // États pour l'édition d'utilisateur
+  const [editForm, setEditForm] = useState<UpdateUserData>({})
 
-  const handleToggleBlock = (userId: number) => {
-    // TODO: Implémenter la logique de blocage/déblocage via l'API
-    setUsers(users.map(user =>
-      user.id === userId ? { ...user, isBlocked: !user.isBlocked } : user
-    ))
+  // Charger les utilisateurs au montage du composant
+  useEffect(() => {
+    loadUsers()
+  }, [])
 
-    const user = users.find(u => u.id === userId)
-    if (user) {
-      alert(user.isBlocked
-        ? `Compte de ${user.name} débloqué`
-        : `Compte de ${user.name} bloqué`)
+  const loadUsers = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const usersData = await adminService.getAllUsers()
+      const formattedUsers = usersData.map(user => ({
+        ...user,
+        name: user.fullName,
+        has2FA: user.totpEnabled
+      }))
+      setUsers(formattedUsers)
+    } catch (err) {
+      setError('Erreur lors du chargement des utilisateurs')
+      console.error('Erreur:', err)
+    } finally {
+      setLoading(false)
     }
   }
 
-  const handleAddUser = (e: React.FormEvent) => {
+  const handleToggleBlock = async (userId: string) => {
+    try {
+      const user = users.find(u => u.id === userId)
+      if (!user) return
+
+      const result = await adminService.toggleUserBlock(userId, !user.isBlocked)
+      
+      // Mettre à jour l'état local
+      setUsers(users.map(u => 
+        u.id === userId ? { ...u, isBlocked: result.user.isBlocked } : u
+      ))
+      
+      //alert(result.message)
+    } catch (err) {
+      //('Erreur lors du changement de statut')
+      console.error('Erreur:', err)
+    }
+  }
+
+  const handleAddUser = async (e: React.FormEvent) => {
     e.preventDefault()
-    // TODO: Implémenter l'ajout d'utilisateur via l'API
-    const newUser: User = {
-      id: users.length + 1,
-      name: newUserName,
-      email: newUserEmail,
-      role: newUserRole,
-      isBlocked: false,
-      has2FA: false,
-      createdAt: new Date().toLocaleDateString('fr-FR', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
+    try {
+      const userData: CreateUserData = {
+        fullName: newUserName,
+        email: newUserEmail,
+        password: newUserPassword,
+        role: newUserRole
+      }
+
+      const result = await adminService.createUser(userData)
+      
+      // Ajouter le nouvel utilisateur à la liste
+      const newUser: User = {
+        ...result.user,
+        name: result.user.fullName,
+        has2FA: result.user.totpEnabled
+      }
+      setUsers([newUser, ...users])
+      
+      // Réinitialiser le formulaire
+      setShowAddUserForm(false)
+      setNewUserName("")
+      setNewUserEmail("")
+      setNewUserPassword("")
+      setNewUserRole("user")
+
+      //alert(result.message)
+    } catch (err) {
+      //alert('Erreur lors de la création de l\'utilisateur')
+      console.error('Erreur:', err)
+    }
+  }
+
+  const handleEditUser = (userId: string) => {
+    const user = users.find(u => u.id === userId)
+    if (user) {
+      setEditingUser(userId)
+      setEditForm({
+        fullName: user.fullName,
+        email: user.email,
+        role: user.role
       })
     }
+  }
 
-    setUsers([...users, newUser])
-    setShowAddUserForm(false)
-    setNewUserName("")
-    setNewUserEmail("")
-    setNewUserPassword("")
-    setNewUserRole("Utilisateur")
+  const handleSaveEdit = async (userId: string) => {
+    try {
+      const result = await adminService.updateUser(userId, editForm)
+      
+      // Mettre à jour l'état local
+      setUsers(users.map(u => 
+        u.id === userId ? { 
+          ...u, 
+          fullName: result.user.fullName,
+          name: result.user.fullName,
+          email: result.user.email,
+          role: result.user.role
+        } : u
+      ))
+      
+      setEditingUser(null)
+      setEditForm({})
+      //alert(result.message)
+    } catch (err) {
+      //alert('Erreur lors de la mise à jour')
+      console.error('Erreur:', err)
+    }
+  }
 
-    alert(`Compte créé pour ${newUserName}`)
+  const handleCancelEdit = () => {
+    setEditingUser(null)
+    setEditForm({})
   }
 
   const handleCancelAddUser = () => {
@@ -110,13 +151,41 @@ export function AdminDashboard() {
     setNewUserName("")
     setNewUserEmail("")
     setNewUserPassword("")
-    setNewUserRole("Utilisateur")
+    setNewUserRole("user")
   }
 
   const filteredUsers = users.filter(user =>
     user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     user.email.toLowerCase().includes(searchQuery.toLowerCase())
   )
+
+  if (loading) {
+    return (
+      <div className="min-h-screen py-12">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-lg">Chargement des utilisateurs...</div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen py-12">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+              <div className="text-lg text-destructive mb-4">{error}</div>
+              <Button onClick={loadUsers}>Réessayer</Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen py-12">
@@ -192,8 +261,8 @@ export function AdminDashboard() {
                       value={newUserRole}
                       onChange={(e) => setNewUserRole(e.target.value)}
                     >
-                      <option value="Utilisateur">Utilisateur</option>
-                      <option value="Admin">Admin</option>
+                      <option value="user">Utilisateur</option>
+                      <option value="admin">Admin</option>
                     </select>
                   </div>
                 </div>
@@ -262,7 +331,7 @@ export function AdminDashboard() {
                     <th className="text-left py-3 px-4 font-medium text-sm text-muted-foreground">
                       Créé le
                     </th>
-                    <th className="text-right py-3 px-4 font-medium text-sm text-muted-foreground">
+                    <th className="text-left py-3 px-4 font-medium text-sm text-muted-foreground">
                       Actions
                     </th>
                   </tr>
@@ -278,15 +347,42 @@ export function AdminDashboard() {
                     filteredUsers.map((user) => (
                       <tr key={user.id} className="border-b last:border-0 hover:bg-muted/50">
                         <td className="py-4 px-4">
-                          <p className="font-medium">{user.name}</p>
+                          {editingUser === user.id ? (
+                            <Input
+                              value={editForm.fullName || ''}
+                              onChange={(e) => setEditForm({...editForm, fullName: e.target.value})}
+                              className="w-full"
+                            />
+                          ) : (
+                            <p className="font-medium">{user.name}</p>
+                          )}
                         </td>
                         <td className="py-4 px-4">
-                          <p className="text-sm text-muted-foreground">{user.email}</p>
+                          {editingUser === user.id ? (
+                            <Input
+                              value={editForm.email || ''}
+                              onChange={(e) => setEditForm({...editForm, email: e.target.value})}
+                              className="w-full"
+                            />
+                          ) : (
+                            <p className="text-sm text-muted-foreground">{user.email}</p>
+                          )}
                         </td>
                         <td className="py-4 px-4">
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
-                            {user.role}
-                          </span>
+                          {editingUser === user.id ? (
+                            <select
+                              value={editForm.role || ''}
+                              onChange={(e) => setEditForm({...editForm, role: e.target.value})}
+                              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                            >
+                              <option value="user">Utilisateur</option>
+                              <option value="admin">Admin</option>
+                            </select>
+                          ) : (
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                              {user.role === 'admin' ? 'Admin' : 'Utilisateur'}
+                            </span>
+                          )}
                         </td>
                         <td className="py-4 px-4">
                           {user.isBlocked ? (
@@ -315,27 +411,68 @@ export function AdminDashboard() {
                           )}
                         </td>
                         <td className="py-4 px-4">
-                          <p className="text-sm text-muted-foreground">{user.createdAt}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {new Date(user.createdAt).toLocaleDateString('fr-FR', {
+                              day: 'numeric',
+                              month: 'long',
+                              year: 'numeric'
+                            })}
+                          </p>
                         </td>
-                        <td className="py-4 px-4 text-right">
-                          <Button
-                            variant={user.isBlocked ? "default" : "destructive"}
-                            size="sm"
-                            className="gap-2"
-                            onClick={() => handleToggleBlock(user.id)}
-                          >
-                            {user.isBlocked ? (
+                        <td className="py-4 px-4">
+                          <div className="flex gap-2">
+                            {editingUser === user.id ? (
                               <>
-                                <Unlock className="h-3 w-3" />
-                                Débloquer
+                                <Button
+                                  size="sm"
+                                  className="gap-1"
+                                  onClick={() => handleSaveEdit(user.id)}
+                                >
+                                  <Save className="h-3 w-3" />
+                                  Sauver
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="gap-1"
+                                  onClick={handleCancelEdit}
+                                >
+                                  <X className="h-3 w-3" />
+                                  Annuler
+                                </Button>
                               </>
                             ) : (
                               <>
-                                <Lock className="h-3 w-3" />
-                                Bloquer
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="gap-1"
+                                  onClick={() => handleEditUser(user.id)}
+                                >
+                                  <Edit className="h-3 w-3" />
+                                  Modifier
+                                </Button>
+                                <Button
+                                  variant={user.isBlocked ? "default" : "destructive"}
+                                  size="sm"
+                                  className="gap-1"
+                                  onClick={() => handleToggleBlock(user.id)}
+                                >
+                                  {user.isBlocked ? (
+                                    <>
+                                      <Unlock className="h-3 w-3" />
+                                      Débloquer
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Lock className="h-3 w-3" />
+                                      Bloquer
+                                    </>
+                                  )}
+                                </Button>
                               </>
                             )}
-                          </Button>
+                          </div>
                         </td>
                       </tr>
                     ))

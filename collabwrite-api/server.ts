@@ -4,6 +4,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import authRoutes from "./src/routes/auth.routes.js";
 import { errorHandler } from "./src/middleware/error.middleware.js";
+import { adminService } from "./src/services/admin.service.js";
 
 dotenv.config();
 
@@ -28,6 +29,9 @@ app.get("/", (req: Request, res: Response) => {
 // Middleware de gestion d'erreurs (doit être le dernier)
 app.use(errorHandler);
 
-app.listen(port, () => {
+app.listen(port, async () => {
     console.log(`API running on port ${port}`);
+    
+    // Initialiser l'utilisateur admin par défaut
+    await adminService.createDefaultAdmin();
 });
