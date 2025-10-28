@@ -10,6 +10,13 @@ export interface LoginDTO {
   totpCode?: string;
 }
 
+export interface FolderDTO {
+  userId: string;
+  body: {
+    name: string;
+  }
+}
+
 export interface AuthResponse {
   accessToken: string;
   refreshToken: string;
