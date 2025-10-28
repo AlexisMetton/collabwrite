@@ -32,6 +32,11 @@ export const folderController = {
                 return res.status(401).json({ error: 'Non authentifié' });
             }
 
+            const existingFolder = await folderService.getFolderByName(name);
+            if(existingFolder.length != 0){
+                return res.status(400).json({ error: 'Le dossier existe déjà' });
+            }
+
             const folder = await folderService.createFolder(userId, name);
 
             res.status(201).json({
