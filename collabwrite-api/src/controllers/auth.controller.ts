@@ -21,8 +21,8 @@ export const authController = {
       const user = await userService.createUser(email, password, fullName);
 
       // Générer les tokens
-      const accessToken = generateAccessToken({ userId: user.id, email: user.email });
-      const refreshToken = generateRefreshToken({ userId: user.id, email: user.email });
+      const accessToken = generateAccessToken({ userId: user.id, email: user.email, role: user.role });
+      const refreshToken = generateRefreshToken({ userId: user.id, email: user.email, role: user.role });
 
       // Créer la session avec les informations de connexion
       const ipAddress = req.ip || req.socket.remoteAddress;
@@ -36,6 +36,7 @@ export const authController = {
           id: user.id,
           email: user.email,
           fullName: user.full_name,
+          role: user.role,
         },
       });
     } catch (error) {
@@ -49,9 +50,17 @@ export const authController = {
       const { email, password } = req.body;
 
       // Vérifier les identifiants
-      const user = await userService.verifyUserCredentials(email, password);
-      if (!user) {
-        return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
+      let user;
+      try {
+        user = await userService.verifyUserCredentials(email, password);
+        if (!user) {
+          return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
+        }
+      } catch (error) {
+        if (error instanceof Error && error.message === 'Compte bloqué') {
+          return res.status(401).json({ error: 'Votre compte est bloqué' });
+        }
+        throw error;
       }
 
       // Si l'utilisateur a activé la 2FA, demander le code TOTP
@@ -71,8 +80,8 @@ export const authController = {
       }
 
       // Générer les tokens
-      const accessToken = generateAccessToken({ userId: user.id, email: user.email });
-      const refreshToken = generateRefreshToken({ userId: user.id, email: user.email });
+      const accessToken = generateAccessToken({ userId: user.id, email: user.email, role: user.role });
+      const refreshToken = generateRefreshToken({ userId: user.id, email: user.email, role: user.role });
 
       // Créer la session avec les informations de connexion
       const ipAddress = req.ip || req.socket.remoteAddress;
@@ -86,6 +95,7 @@ export const authController = {
           id: user.id,
           email: user.email,
           fullName: user.full_name,
+          role: user.role,
         },
       });
     } catch (error) {

@@ -38,3 +38,15 @@ export interface UpdatePasswordDTO {
   currentPassword: string;
   newPassword: string;
 }
+
+import type { Request } from 'express';
+
+export interface AuthRequest extends Request {
+  userId: string;
+  email: string;
+  user?: {
+    id: string;
+    email: string;
+    role: string;
+  };
+}

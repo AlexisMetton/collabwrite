@@ -19,6 +19,7 @@ export interface AuthResponse {
     id: string;
     email: string;
     fullName: string;
+    role: string;
   };
   requires2FA?: boolean;
   message?: string;

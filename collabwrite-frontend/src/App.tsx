@@ -3,6 +3,7 @@ import { AuthProvider } from './contexts/AuthContext'
 import { Header } from './components/Header'
 import { Footer } from './components/Footer'
 import { ProtectedRoute } from './components/ProtectedRoute'
+import { AdminRoute } from './components/AdminRoute'
 import { PublicRoute } from './components/PublicRoute'
 import { HomePage } from './pages/HomePage'
 import { LoginPage } from './pages/LoginPage'
@@ -88,15 +89,15 @@ function App() {
             }
           />
           <Route
-          path="/admin"
-          element={
-            <ProtectedRoute>
-              <MainLayout>
-                <AdminDashboard />
-              </MainLayout>
-             </ProtectedRoute>
-          }
-        />
+            path="/admin"
+            element={
+              <AdminRoute>
+                <MainLayout>
+                  <AdminDashboard />
+                </MainLayout>
+              </AdminRoute>
+            }
+          />
         </Routes>
       </Router>
     </AuthProvider>
