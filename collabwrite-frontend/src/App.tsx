@@ -1,15 +1,21 @@
-import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
-import { Footer } from "./components/Footer";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./contexts/AuthContext";
+
+// Layouts & Components
 import { Header } from "./components/Header";
-import { DashboardLayout } from "./components/layout/DashboardLayout";
+import { Footer } from "./components/Footer";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { PublicRoute } from "./components/PublicRoute";
-import { AuthProvider } from "./contexts/AuthContext";
-import { DashboardPage } from "./pages/DashboardPage";
+import { AdminRoute } from "./components/AdminRoute";
+import { DashboardLayout } from "./components/layout/DashboardLayout";
+
+// Pages
 import { HomePage } from "./pages/HomePage";
 import { LoginPage } from "./pages/LoginPage";
-import { ProfilePage } from "./pages/ProfilePage";
 import { RegisterPage } from "./pages/RegisterPage";
+import { DashboardPage } from "./pages/DashboardPage";
+import { ProfilePage } from "./pages/ProfilePage";
+import { AdminDashboard } from "./pages/AdminDashboard";
 import DocumentEditorPage from "./pages/DocumentEditorPage";
 import EditorPage from "./pages/EditorPage";
 
@@ -34,7 +40,7 @@ function App() {
     <AuthProvider>
       <Router>
         <Routes>
-          {/* Pages avec Header et Footer */}
+         
           <Route
             path="/"
             element={
@@ -46,7 +52,7 @@ function App() {
             }
           />
 
-          {/* Pages sans Header/Footer (auth) */}
+          
           <Route
             path="/login"
             element={
@@ -67,6 +73,8 @@ function App() {
               </PublicRoute>
             }
           />
+
+         
           <Route
             path="/dashboard"
             element={
@@ -87,6 +95,8 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+          
           <Route
             path="/editor/:pageId"
             element={
@@ -105,6 +115,18 @@ function App() {
                   <DocumentEditorPage />
                 </DashboardLayout>
               </ProtectedRoute>
+            }
+          />
+
+        
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <MainLayout>
+                  <AdminDashboard />
+                </MainLayout>
+              </AdminRoute>
             }
           />
         </Routes>

@@ -83,6 +83,11 @@ export const userService = {
       return null;
     }
 
+    // Vérifier si l'utilisateur est bloqué
+    if (user.is_blocked) {
+      throw new Error('Compte bloqué');
+    }
+
     return user;
   },
 
@@ -129,5 +134,103 @@ export const userService = {
     );
 
     return true;
+  },
+
+  // Méthodes pour l'administration
+  async getAllUsers() {
+    const result = await pool.query(
+      `SELECT id, email, full_name, role, totp_enabled, is_blocked, created_at
+       FROM users
+       ORDER BY created_at DESC`
+    );
+    
+    return result.rows.map(user => ({
+      id: user.id,
+      email: user.email,
+      fullName: user.full_name,
+      role: user.role,
+      totpEnabled: user.totp_enabled,
+      isBlocked: user.is_blocked,
+      createdAt: user.created_at
+    }));
+  },
+
+  async updateUserBlockStatus(userId: string, isBlocked: boolean) {
+    const result = await pool.query(
+      `UPDATE users SET is_blocked = $1, updated_at = NOW()
+       WHERE id = $2
+       RETURNING id, email, full_name, role, totp_enabled, is_blocked, created_at`,
+      [isBlocked, userId]
+    );
+
+    if (!result.rows[0]) {
+      throw new Error('Utilisateur introuvable');
+    }
+
+    const user = result.rows[0];
+    return {
+      id: user.id,
+      email: user.email,
+      fullName: user.full_name,
+      role: user.role,
+      totpEnabled: user.totp_enabled,
+      isBlocked: user.is_blocked,
+      createdAt: user.created_at
+    };
+  },
+
+  async updateUserByAdmin(userId: string, updates: { fullName?: string; email?: string; role?: string }) {
+    const fields = [];
+    const values = [];
+    let paramIndex = 1;
+
+    if (updates.fullName !== undefined) {
+      fields.push(`full_name = $${paramIndex}`);
+      values.push(updates.fullName);
+      paramIndex++;
+    }
+
+    if (updates.email !== undefined) {
+      fields.push(`email = $${paramIndex}`);
+      values.push(updates.email);
+      paramIndex++;
+    }
+
+    if (updates.role !== undefined) {
+      fields.push(`role = $${paramIndex}`);
+      values.push(updates.role);
+      paramIndex++;
+    }
+
+    if (fields.length === 0) {
+      throw new Error('Aucune mise à jour à effectuer');
+    }
+
+    fields.push(`updated_at = NOW()`);
+    values.push(userId);
+
+    const query = `
+      UPDATE users 
+      SET ${fields.join(', ')}
+      WHERE id = $${paramIndex}
+      RETURNING id, email, full_name, role, totp_enabled, is_blocked, created_at
+    `;
+
+    const result = await pool.query(query, values);
+
+    if (!result.rows[0]) {
+      throw new Error('Utilisateur introuvable');
+    }
+
+    const user = result.rows[0];
+    return {
+      id: user.id,
+      email: user.email,
+      fullName: user.full_name,
+      role: user.role,
+      totpEnabled: user.totp_enabled,
+      isBlocked: user.is_blocked,
+      createdAt: user.created_at
+    };
   },
 }; 
