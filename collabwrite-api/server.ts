@@ -3,6 +3,7 @@ import express, { type Request, type Response } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import authRoutes from "./src/routes/auth.routes.js";
+import folderRoutes from "./src/routes/folder.routes.js";
 import { errorHandler } from "./src/middleware/error.middleware.js";
 import { adminService } from "./src/services/admin.service.js";
 
@@ -21,6 +22,7 @@ app.use(cookieParser());
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/folder', folderRoutes);
 
 app.get("/", (req: Request, res: Response) => {
     res.send("Hello World!");

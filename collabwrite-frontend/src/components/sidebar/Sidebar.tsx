@@ -16,6 +16,7 @@ import {
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FolderList } from "./FolderList";
+import { folderService } from "@/services/folder.service";
 
 export const Sidebar: React.FC = () => {
   const navigate = useNavigate();
@@ -26,8 +27,8 @@ export const Sidebar: React.FC = () => {
     sortOrder,
     sortFiles,
     createFile,
-    createFolder,
   } = useDocumentStore();
+  const [error, setError] = useState("");
   const [showCreateFolderModal, setShowCreateFolderModal] = useState(false);
   const [showCreateFileModal, setShowCreateFileModal] = useState(false);
   const [showFilterModal, setShowFilterModal] = useState(false);
@@ -92,7 +93,13 @@ export const Sidebar: React.FC = () => {
   };
 
   const handleConfirmCreateFolder = async (name: string, color: string) => {
-    await createFolder(name, color);
+    try{
+      await folderService.createFolder({ name, color });
+    }
+    catch (err: unknown){
+      const error = err as { response?: { data?: { error?: string } } }
+      setError(error.response?.data?.error || "Erreur lors de l'ajout du dossier")
+    }
   };
 
   const handleSort = () => {

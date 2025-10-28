@@ -95,8 +95,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-
-          
           <Route
             path="/editor/:pageId"
             element={
@@ -116,9 +114,7 @@ function App() {
                 </DashboardLayout>
               </ProtectedRoute>
             }
-          />
-
-        
+          />        
           <Route
             path="/admin"
             element={
