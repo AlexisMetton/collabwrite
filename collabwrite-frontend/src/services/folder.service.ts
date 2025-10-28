@@ -21,7 +21,6 @@ export const folderService = {
     },
 
     async updateFolder(data: FolderUpdateData){
-        console.log(data);
         const response = await api.put('/folder/update', data);
         return response.data;
     },

@@ -19,7 +19,7 @@ import type { Folder } from '@/types/document';
 interface DeleteFolderModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: () => void;
+  onConfirm: (name: string) => void;
   folder: Folder | null;
 }
 
@@ -32,7 +32,7 @@ export const DeleteFolderModal: React.FC<DeleteFolderModalProps> = ({
   if (!folder) return null;
 
   const handleConfirm = () => {
-    onConfirm();
+    onConfirm(folder.name);
     onClose();
   };
 
@@ -42,10 +42,10 @@ export const DeleteFolderModal: React.FC<DeleteFolderModalProps> = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-destructive">
             <AlertTriangle className="h-5 w-5" />
-            Supprimer le dossier
+            Supprimer le dossier {folder.name}
           </DialogTitle>
           <DialogDescription>
-            Cette action est irréversible. Êtes-vous sûr de vouloir supprimer ce dossier ?
+            Cette action est irréversible. Êtes-vous sûr de vouloir supprimer le dossier {folder.name} ?
           </DialogDescription>
         </DialogHeader>
 
@@ -60,9 +60,9 @@ export const DeleteFolderModal: React.FC<DeleteFolderModalProps> = ({
               </div>
               <div>
                 <p className="font-medium">{folder.name}</p>
-                <p className="text-sm text-muted-foreground">
+{/*                 <p className="text-sm text-muted-foreground">
                   Créé le {folder.createdAt.toLocaleDateString('fr-FR')}
-                </p>
+                </p> */}
               </div>
             </div>
           </div>

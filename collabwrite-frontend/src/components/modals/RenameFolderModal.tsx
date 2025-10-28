@@ -20,7 +20,7 @@ import { FolderEdit } from 'lucide-react';
 interface RenameFolderModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (newName: string) => void;
+  onConfirm: (oldName: string, newName: string) => void;
   currentName: string;
 }
 
@@ -41,7 +41,7 @@ export const RenameFolderModal: React.FC<RenameFolderModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (folderName.trim() && folderName.trim() !== currentName) {
-      onConfirm(folderName.trim());
+      onConfirm(currentName, folderName.trim());
       onClose();
     }
   };

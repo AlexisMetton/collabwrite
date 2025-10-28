@@ -1,9 +1,10 @@
 import { useDocumentStore } from "@/hooks/useDocumentStore";
 import { FileText } from "lucide-react";
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { EmptyState } from "../ui/EmptyState";
 import { DocumentItem } from "./DocumentItem";
 import { FolderItem } from "./FolderItem";
+import { folderService } from "@/services/folder.service";
 
 interface FolderListProps {
   fileTypeFilter?: "all" | "txt" | "image" | "pdf";
@@ -13,7 +14,6 @@ export const FolderList: React.FC<FolderListProps> = ({
   fileTypeFilter = "all",
 }) => {
   const {
-    folders,
     isLoading,
     files,
     searchQuery,
@@ -23,34 +23,21 @@ export const FolderList: React.FC<FolderListProps> = ({
   } = useDocumentStore();
   const [isDragOverRoot, setIsDragOverRoot] = React.useState(false);
 
-  if (isLoading) {
-    return (
-      <div className="p-4 space-y-2">
-        {Array.from({ length: 3 }).map((_, index) => (
-          <div key={index} className="h-16 bg-muted rounded-lg animate-pulse" />
-        ))}
-      </div>
-    );
+  const [error, setError] = useState("");
+  const [folders, setFolders] = useState([]);
+  
+  const getFolders = async () => {
+    try{
+      const folders = await folderService.getFolders();
+      setFolders(folders);
+    }
+    catch (err: unknown) {
+      const error = err as { response?: { data?: { error?: string } } }
+      setError(error.response?.data?.error || "Erreur lors de la récupération des dossiers.")
+    }
   }
 
-  if (folders.length === 0) {
-    return (
-      <div className="p-4">
-        <EmptyState
-          title="Aucun dossier"
-          description="Créez votre premier dossier pour organiser vos pages."
-          action={{
-            label: "Créer un dossier",
-            onClick: () => {
-              console.log("Créer un dossier");
-            },
-          }}
-        />
-      </div>
-    );
-  }
-
-  // Mémoriser les résultats de recherche et filtrage pour améliorer les performances
+    // Mémoriser les résultats de recherche et filtrage pour améliorer les performances
   const { visibleFolders, rootFiles } = useMemo(() => {
     const searchLower = searchQuery.toLowerCase();
 
@@ -125,6 +112,37 @@ export const FolderList: React.FC<FolderListProps> = ({
       rootFiles: filteredRootFiles,
     };
   }, [files, folders, searchQuery, fileTypeFilter, sortBy, sortOrder]);
+  
+  useEffect(() => {
+    getFolders();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="p-4 space-y-2">
+        {Array.from({ length: 3 }).map((_, index) => (
+          <div key={index} className="h-16 bg-muted rounded-lg animate-pulse" />
+        ))}
+      </div>
+    );
+  }
+
+  if (folders.length === 0) {
+    return (
+      <div className="p-4">
+        <EmptyState
+          title="Aucun dossier"
+          description="Créez votre premier dossier pour organiser vos pages."
+          action={{
+            label: "Créer un dossier",
+            onClick: () => {
+              console.log("Créer un dossier");
+            },
+          }}
+        />
+      </div>
+    );
+  }
 
   // Vérifier s'il y a des résultats (dossiers OU fichiers racine)
   if (visibleFolders.length === 0 && rootFiles.length === 0 && searchQuery) {

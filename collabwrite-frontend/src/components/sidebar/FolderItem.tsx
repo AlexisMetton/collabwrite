@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { folderService } from "@/services/folder.service";
 
 interface FolderItemProps {
   folder: FolderType;
@@ -42,7 +43,6 @@ export const FolderItem: React.FC<FolderItemProps> = ({
     currentFile,
     setCurrentFile,
     createFile,
-    deleteFolder,
     updateFolder,
     updateFile,
     deleteFile,
@@ -52,6 +52,7 @@ export const FolderItem: React.FC<FolderItemProps> = ({
     sortOrder,
   } = useDocumentStore();
   const navigate = useNavigate();
+  const [error, setError] = useState("");
   const [isExpanded, setIsExpanded] = useState(false);
   const [showRenameModal, setShowRenameModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -170,16 +171,28 @@ export const FolderItem: React.FC<FolderItemProps> = ({
     setShowRenameModal(true);
   };
 
-  const handleConfirmRename = (newName: string) => {
-    updateFolder(folder.id, { name: newName });
+  const handleConfirmRename = async (oldname: string, newname: string) => {
+    try{
+      await folderService.updateFolder({ oldname, newname })
+    }
+    catch (err: unknown){
+      const error = err as { response?: { data?: { error?: string } } }
+      setError(error.response?.data?.error || "Erreur lors de la mise à jour d'un dossier.")
+    }
   };
 
   const handleOpenDeleteModal = () => {
     setShowDeleteModal(true);
   };
 
-  const handleConfirmDelete = () => {
-    deleteFolder(folder.id);
+  const handleConfirmDelete =  async (name: string) => {
+    try{
+      await folderService.deleteFolder({ name })
+    }
+    catch (err: unknown){
+      const error = err as { response?: { data?: { error?: string } } }
+      setError(error.response?.data?.error || "Erreur lors de la suppression d'un dossier.")
+    }
   };
 
   const handleOpenRenameFileModal = (file: File, e: React.MouseEvent) => {
