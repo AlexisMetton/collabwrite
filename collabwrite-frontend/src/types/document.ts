@@ -3,7 +3,7 @@
  * Projet Spé 4 - Structure hiérarchique unifiée
  */
 
-export type FileType = "txt" | "png" | "pdf";
+export type FileType = "txt" | "png" | "pdf" | "folder";
 
 export interface Folder {
   id: string;

@@ -13,12 +13,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { folderService } from "@/services/folder.service";
+import CreateFolderModal from "./CreateFolderModal";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { FileType } from "@/types/document";
 import {
   FileText,
   FileType as FileTypeIcon,
+  Folder as FolderTypeIcon,
   Image,
   Upload,
   X,
@@ -42,11 +45,31 @@ export const CreateFileModal: React.FC<CreateFileModalProps> = ({
   const [fileName, setFileName] = useState("");
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
+  const [error, setError] = useState("");
 
   const handleTypeSelect = (type: FileType) => {
     setSelectedType(type);
+    if(type == "folder"){
+      setIsCreateFolderOpen(true);
+      handleClose();
+    }
     setStep("details");
   };
+
+  const handleCloseModal = () => {
+    setIsCreateFolderOpen(false);
+  }
+
+  const handleConfirmCreateFolder = async (name: string, color: string) => {
+    try {
+      await folderService.createFolder({ name, color });
+    }
+    catch (err: unknown){
+      const error = err as { response?: { data?: { error?: string } } }
+      setError(error.response?.data?.error || "Erreur lors de l'ajout du dossier");
+    }
+  }
 
   const handleBack = () => {
     setStep("type");
@@ -163,200 +186,225 @@ export const CreateFileModal: React.FC<CreateFileModalProps> = ({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[600px]">
-        {step === "type" ? (
-          <>
-            <DialogHeader>
-              <DialogTitle>Créer un nouveau fichier</DialogTitle>
-              <DialogDescription>
-                Choisissez le type de fichier que vous souhaitez créer.
-              </DialogDescription>
-            </DialogHeader>
+    <>
+      <Dialog open={isOpen} onOpenChange={handleClose}>
+        <DialogContent className="sm:max-w-[600px]">
+          {step === "type" ? (
+            <>
+              <DialogHeader>
+                <DialogTitle>Créer un nouveau fichier ou un nouveau dossier</DialogTitle>
+                <DialogDescription>
+                  Choisissez le type de fichier que vous souhaitez créer.
+                </DialogDescription>
+              </DialogHeader>
 
-            <div className="grid grid-cols-3 gap-4 py-6">
-              <Card
-                className="p-6 cursor-pointer hover:shadow-lg transition-all hover:scale-105 hover:border-primary"
-                onClick={() => handleTypeSelect("txt")}
-              >
-                <div className="flex flex-col items-center gap-3 text-center">
-                  <div className="h-16 w-16 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                    <FileText className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Texte</h3>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Document éditable
-                    </p>
-                  </div>
-                </div>
-              </Card>
-
-              <Card
-                className="p-6 cursor-pointer hover:shadow-lg transition-all hover:scale-105 hover:border-primary"
-                onClick={() => handleTypeSelect("png")}
-              >
-                <div className="flex flex-col items-center gap-3 text-center">
-                  <div className="h-16 w-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                    <Image className="h-8 w-8 text-green-600 dark:text-green-400" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Image</h3>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      PNG, JPG, GIF
-                    </p>
-                  </div>
-                </div>
-              </Card>
-
-              <Card
-                className="p-6 cursor-pointer hover:shadow-lg transition-all hover:scale-105 hover:border-primary"
-                onClick={() => handleTypeSelect("pdf")}
-              >
-                <div className="flex flex-col items-center gap-3 text-center">
-                  <div className="h-16 w-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                    <FileTypeIcon className="h-8 w-8 text-red-600 dark:text-red-400" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">PDF</h3>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Document PDF
-                    </p>
-                  </div>
-                </div>
-              </Card>
-            </div>
-
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={handleClose}>
-                Annuler
-              </Button>
-            </DialogFooter>
-          </>
-        ) : (
-          <>
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                {selectedType === "txt" && (
-                  <FileText className="h-5 w-5 text-blue-600" />
-                )}
-                {selectedType === "png" && (
-                  <Image className="h-5 w-5 text-green-600" />
-                )}
-                {selectedType === "pdf" && (
-                  <FileTypeIcon className="h-5 w-5 text-red-600" />
-                )}
-                Nouveau fichier {selectedType?.toUpperCase()}
-              </DialogTitle>
-              <DialogDescription>
-                {selectedType === "txt"
-                  ? "Créez un nouveau fichier texte éditable."
-                  : `Uploadez un fichier ${selectedType?.toUpperCase()} depuis votre ordinateur.`}
-              </DialogDescription>
-            </DialogHeader>
-
-            <form onSubmit={handleSubmit}>
-              <div className="space-y-4 py-4">
-                {/* Nom du fichier */}
-                <div className="space-y-2">
-                  <Label htmlFor="file-name">Nom du fichier</Label>
-                  <Input
-                    id="file-name"
-                    placeholder="Ex: Mon document"
-                    value={fileName}
-                    onChange={(e) => setFileName(e.target.value)}
-                    autoFocus
-                  />
-                </div>
-
-                {/* Zone d'upload pour PNG/PDF */}
-                {selectedType !== "txt" && (
-                  <div className="space-y-2">
-                    <Label>Fichier à uploader</Label>
-                    <div
-                      className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-                        isDragging
-                          ? "border-primary bg-primary/5"
-                          : uploadedFile
-                          ? "border-green-500 bg-green-50 dark:bg-green-900/10"
-                          : "border-muted-foreground/25 hover:border-muted-foreground/50"
-                      }`}
-                      onDrop={handleDrop}
-                      onDragOver={handleDragOver}
-                      onDragLeave={handleDragLeave}
-                    >
-                      {uploadedFile ? (
-                        <div className="space-y-4">
-                          <div className="flex items-center justify-center gap-2">
-                            {selectedType === "png" ? (
-                              <Image className="h-8 w-8 text-green-600" />
-                            ) : (
-                              <FileTypeIcon className="h-8 w-8 text-red-600" />
-                            )}
-                            <div className="text-left">
-                              <p className="font-medium">{uploadedFile.name}</p>
-                              <p className="text-sm text-muted-foreground">
-                                {(uploadedFile.size / 1024).toFixed(2)} KB
-                              </p>
-                            </div>
-                          </div>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setUploadedFile(null)}
-                            className="gap-2"
-                          >
-                            <X className="h-4 w-4" />
-                            Supprimer
-                          </Button>
-                        </div>
-                      ) : (
-                        <>
-                          <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                          <p className="text-sm text-muted-foreground mb-2">
-                            Glissez-déposez votre fichier ici ou
-                          </p>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() =>
-                              document.getElementById("file-input")?.click()
-                            }
-                          >
-                            Parcourir les fichiers
-                          </Button>
-                          <input
-                            id="file-input"
-                            type="file"
-                            className="hidden"
-                            accept={
-                              selectedType === "png"
-                                ? "image/*"
-                                : "application/pdf"
-                            }
-                            onChange={handleFileInputChange}
-                          />
-                        </>
-                      )}
+              <div className="grid grid-cols-4 gap-4 py-6">
+                <Card
+                  className="p-6 cursor-pointer hover:shadow-lg transition-all hover:scale-105 hover:border-primary"
+                  onClick={() => handleTypeSelect("txt")}
+                >
+                  <div className="flex flex-col items-center gap-3 text-center">
+                    <div className="h-16 w-16 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                      <FileText className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold">Texte</h3>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Document éditable
+                      </p>
                     </div>
                   </div>
-                )}
+                </Card>
+
+                <Card
+                  className="p-6 cursor-pointer hover:shadow-lg transition-all hover:scale-105 hover:border-primary"
+                  onClick={() => handleTypeSelect("png")}
+                >
+                  <div className="flex flex-col items-center gap-3 text-center">
+                    <div className="h-16 w-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                      <Image className="h-8 w-8 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold">Image</h3>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        PNG, JPG, GIF
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+
+                <Card
+                  className="p-6 cursor-pointer hover:shadow-lg transition-all hover:scale-105 hover:border-primary"
+                  onClick={() => handleTypeSelect("pdf")}
+                >
+                  <div className="flex flex-col items-center gap-3 text-center">
+                    <div className="h-16 w-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                      <FileTypeIcon className="h-8 w-8 text-red-600 dark:text-red-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold">PDF</h3>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Document PDF
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+
+                <Card
+                  className="p-6 cursor-pointer hover:shadow-lg transition-all hover:scale-105 hover:border-primary"
+                  onClick={() => handleTypeSelect("folder")}
+                >
+                  <div className="flex flex-col items-center gap-3 text-center">
+                    <div className="h-16 w-16 rounded-full bg-gray-300 dark:bg-gray-900/30 flex items-center justify-center">
+                      <FolderTypeIcon className="h-8 w-8 text-gray-600 dark:text-gray-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold">Dossier</h3>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Nouveau dossier
+                      </p>
+                    </div>
+                  </div>
+                </Card>
               </div>
 
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={handleBack}>
-                  Retour
-                </Button>
-                <Button type="submit" disabled={!isFormValid()}>
-                  Créer le fichier
+                <Button type="button" variant="outline" onClick={handleClose}>
+                  Annuler
                 </Button>
               </DialogFooter>
-            </form>
-          </>
-        )}
-      </DialogContent>
-    </Dialog>
+            </>
+          ) : (
+            <>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  {selectedType === "txt" && (
+                    <FileText className="h-5 w-5 text-blue-600" />
+                  )}
+                  {selectedType === "png" && (
+                    <Image className="h-5 w-5 text-green-600" />
+                  )}
+                  {selectedType === "pdf" && (
+                    <FileTypeIcon className="h-5 w-5 text-red-600" />
+                  )}
+                  Nouveau fichier {selectedType?.toUpperCase()}
+                </DialogTitle>
+                <DialogDescription>
+                  {selectedType === "txt"
+                    ? "Créez un nouveau fichier texte éditable."
+                    : `Uploadez un fichier ${selectedType?.toUpperCase()} depuis votre ordinateur.`}
+                </DialogDescription>
+              </DialogHeader>
+
+              <form onSubmit={handleSubmit}>
+                <div className="space-y-4 py-4">
+                  {/* Nom du fichier */}
+                  <div className="space-y-2">
+                    <Label htmlFor="file-name">Nom du fichier</Label>
+                    <Input
+                      id="file-name"
+                      placeholder="Ex: Mon document"
+                      value={fileName}
+                      onChange={(e) => setFileName(e.target.value)}
+                      autoFocus
+                    />
+                  </div>
+
+                  {/* Zone d'upload pour PNG/PDF */}
+                  {selectedType !== "txt" && (
+                    <div className="space-y-2">
+                      <Label>Fichier à uploader</Label>
+                      <div
+                        className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+                          isDragging
+                            ? "border-primary bg-primary/5"
+                            : uploadedFile
+                            ? "border-green-500 bg-green-50 dark:bg-green-900/10"
+                            : "border-muted-foreground/25 hover:border-muted-foreground/50"
+                        }`}
+                        onDrop={handleDrop}
+                        onDragOver={handleDragOver}
+                        onDragLeave={handleDragLeave}
+                      >
+                        {uploadedFile ? (
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-center gap-2">
+                              {selectedType === "png" ? (
+                                <Image className="h-8 w-8 text-green-600" />
+                              ) : (
+                                <FileTypeIcon className="h-8 w-8 text-red-600" />
+                              )}
+                              <div className="text-left">
+                                <p className="font-medium">{uploadedFile.name}</p>
+                                <p className="text-sm text-muted-foreground">
+                                  {(uploadedFile.size / 1024).toFixed(2)} KB
+                                </p>
+                              </div>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setUploadedFile(null)}
+                              className="gap-2"
+                            >
+                              <X className="h-4 w-4" />
+                              Supprimer
+                            </Button>
+                          </div>
+                        ) : (
+                          <>
+                            <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                            <p className="text-sm text-muted-foreground mb-2">
+                              Glissez-déposez votre fichier ici ou
+                            </p>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() =>
+                                document.getElementById("file-input")?.click()
+                              }
+                            >
+                              Parcourir les fichiers
+                            </Button>
+                            <input
+                              id="file-input"
+                              type="file"
+                              className="hidden"
+                              accept={
+                                selectedType === "png"
+                                  ? "image/*"
+                                  : "application/pdf"
+                              }
+                              onChange={handleFileInputChange}
+                            />
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <DialogFooter>
+                  <Button type="button" variant="outline" onClick={handleBack}>
+                    Retour
+                  </Button>
+                  <Button type="submit" disabled={!isFormValid()}>
+                    Créer le fichier
+                  </Button>
+                </DialogFooter>
+              </form>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <CreateFolderModal 
+        isOpen={isCreateFolderOpen}
+        onClose={handleCloseModal}
+        onConfirm={handleConfirmCreateFolder}
+      />
+    </>
   );
 };
 
