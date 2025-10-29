@@ -58,12 +58,21 @@ export const CreateFileModal: React.FC<CreateFileModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (fileName.trim() && selectedType) {
+      let finalFileName = fileName.trim();
+      
+      // S'assurer que les images et PDFs ont l'extension appropriée
+      if (selectedType === "png" && !finalFileName.toLowerCase().endsWith(".png")) {
+        finalFileName = finalFileName + ".png";
+      } else if (selectedType === "pdf" && !finalFileName.toLowerCase().endsWith(".pdf")) {
+        finalFileName = finalFileName + ".pdf";
+      }
+      
       // Pour les fichiers texte, pas besoin de fichier uploadé
       if (selectedType === "txt") {
-        onConfirm(fileName.trim(), selectedType);
+        onConfirm(finalFileName, selectedType);
       } else if (uploadedFile) {
         // Pour png/pdf, on a besoin d'un fichier uploadé
-        onConfirm(fileName.trim(), selectedType, uploadedFile);
+        onConfirm(finalFileName, selectedType, uploadedFile);
       }
       handleClose();
     }
@@ -97,10 +106,12 @@ export const CreateFileModal: React.FC<CreateFileModalProps> = ({
         const allowedTypes = validTypes[selectedType];
         if (allowedTypes.includes(file.type)) {
           setUploadedFile(file);
-          // Extraire le nom du fichier sans extension
+          // Extraire le nom du fichier et ajouter l'extension appropriée
           const nameWithoutExt = file.name.replace(/\.[^/.]+$/, "");
-          if (!fileName) {
-            setFileName(nameWithoutExt);
+          const extension = selectedType === "png" ? ".png" : selectedType === "pdf" ? ".pdf" : "";
+          const finalName = nameWithoutExt + extension;
+          if (!fileName || fileName === nameWithoutExt) {
+            setFileName(finalName);
           }
         } else {
           alert(

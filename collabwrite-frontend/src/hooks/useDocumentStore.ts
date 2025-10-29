@@ -6,6 +6,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { DocumentStore, UserPreferences, Folder, File, UploadedFile, FileType } from '@/types/document';
+import { documentService } from '@/services/document.service';
+import { folderService } from '@/services/folder.service';
 
 // Données simulées pour les dossiers
 const mockFolders: Folder[] = [
@@ -25,77 +27,8 @@ const mockFolders: Folder[] = [
   }
 ];
 
-// Données simulées pour les fichiers (certains dans des dossiers, d'autres sans dossier)
-const mockFiles: File[] = [
-  // Fichiers dans le dossier "Projets"
-  {
-    id: 'file-1',
-    name: 'Projet Alpha',
-    fileType: 'txt',
-    content: '<h2>Projet Alpha</h2><p>Description du projet Alpha...</p>',
-    folderId: 'folder-1',
-    description: 'Description du projet Alpha',
-    createdAt: new Date('2024-01-15'),
-    updatedAt: new Date('2024-01-15'),
-    author: 'Admin',
-    tags: ['projet', 'alpha'],
-    isDirty: false,
-  },
-  {
-    id: 'file-2',
-    name: 'Projet Beta',
-    fileType: 'txt',
-    content: '<h2>Projet Beta</h2><p>Description du projet Beta...</p>',
-    folderId: 'folder-1',
-    description: 'Description du projet Beta',
-    createdAt: new Date('2024-01-16'),
-    updatedAt: new Date('2024-01-16'),
-    author: 'Admin',
-    tags: ['projet', 'beta'],
-    isDirty: false,
-  },
-  // Fichiers dans le dossier "Notes"
-  {
-    id: 'file-3',
-    name: 'Réunion du 20 janvier',
-    fileType: 'txt',
-    content: '<h2>Réunion du 20 janvier</h2><p>Points abordés...</p>',
-    folderId: 'folder-2',
-    description: 'Compte-rendu de réunion',
-    createdAt: new Date('2024-01-20'),
-    updatedAt: new Date('2024-01-20'),
-    author: 'Marie Dupont',
-    tags: ['réunion', 'notes'],
-    isDirty: false,
-  },
-  // Fichiers sans dossier (racine)
-  {
-    id: 'file-4',
-    name: 'Guide de démarrage',
-    fileType: 'txt',
-    content: '<h2>Guide de démarrage</h2><p>Bienvenue dans le Projet Spé 4 !</p><p>Ce document vous aidera à comprendre les fonctionnalités principales de l\'application.</p>',
-    folderId: null,
-    description: 'Document d\'introduction au projet',
-    author: 'Admin',
-    createdAt: new Date('2024-01-15'),
-    updatedAt: new Date('2024-01-15'),
-    tags: ['guide', 'démarrage'],
-    isDirty: false,
-  },
-  {
-    id: 'file-5',
-    name: 'Spécifications techniques',
-    fileType: 'txt',
-    content: '<h2>Spécifications techniques</h2><h3>Stack technologique</h3><ul><li>React + TypeScript</li><li>TailwindCSS</li><li>shadcn/ui</li><li>Zustand</li><li>Framer Motion</li></ul>',
-    folderId: null,
-    description: 'Documentation technique du projet',
-    author: 'Jean Martin',
-    createdAt: new Date('2024-01-22'),
-    updatedAt: new Date('2024-01-22'),
-    tags: ['technique', 'spécifications'],
-    isDirty: false,
-  },
-];
+// Les fichiers sont désormais chargés depuis l'API
+const initialFiles: File[] = [];
 
 const mockUploadedFiles: UploadedFile[] = [
   {
@@ -130,7 +63,7 @@ export const useDocumentStore = create<DocumentStore>()(
   persist(
     (set, get) => ({
       // État initial
-      files: mockFiles,
+      files: initialFiles,
       folders: mockFolders,
       uploadedFiles: mockUploadedFiles,
       currentFile: null,
@@ -153,56 +86,131 @@ export const useDocumentStore = create<DocumentStore>()(
         content = '',
         uploadedFile?: globalThis.File
       ) => {
-        let fileContent = content;
-        let fileSize = 0;
+        const toDataUrl = (file: globalThis.File) =>
+          new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(String(reader.result));
+            reader.onerror = (e) => reject(e);
+            reader.readAsDataURL(file);
+          });
 
-        // Si c'est un fichier uploadé (png/pdf), on stocke l'URL
+        let finalContent = content;
+        let size: number | undefined = undefined;
         if (uploadedFile) {
-          fileContent = URL.createObjectURL(uploadedFile);
-          fileSize = uploadedFile.size;
+          finalContent = await toDataUrl(uploadedFile);
+          size = uploadedFile.size;
         }
 
-        const newFile: File = {
-          id: `file-${Date.now()}`,
+        const created = await documentService.createDocument({
           name,
           fileType,
-          content: fileContent,
           folderId,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          author: 'Utilisateur actuel',
+          content: finalContent || (fileType === 'txt' ? '<p>Nouveau document</p>' : ''),
+          size,
+        });
+
+        const mapped: File = {
+          id: created.id,
+          name: created.name,
+          fileType: created.file_type,
+          content: created.content,
+          folderId: created.folder_id,
+          description: created.description ?? undefined,
+          createdAt: new Date(created.created_at),
+          updatedAt: new Date(created.updated_at),
+          author: 'Moi',
           tags: [],
-          size: fileSize,
+          size: created.size ?? undefined,
           isDirty: false,
         };
 
-        set((state) => ({
-          files: [newFile, ...state.files],
-          currentFile: newFile,
-        }));
-
-        return newFile;
+        set((state) => {
+          // Vérifier si le fichier existe déjà dans le store (même id)
+          const existingIndex = state.files.findIndex(f => f.id === mapped.id);
+          
+          // Vérifier aussi s'il existe un fichier avec le même nom, type et dossier (pour éviter les doublons)
+          const duplicateIndex = state.files.findIndex(f => 
+            f.id !== mapped.id && 
+            f.name === mapped.name && 
+            f.fileType === mapped.fileType && 
+            f.folderId === mapped.folderId
+          );
+          
+          let updatedFiles = [...state.files];
+          
+          if (existingIndex >= 0) {
+            // Si le fichier existe avec le même ID, le remplacer
+            updatedFiles[existingIndex] = mapped;
+          } else if (duplicateIndex >= 0) {
+            // Si un fichier avec le même nom/type/dossier existe mais avec un ID différent, le remplacer
+            updatedFiles[duplicateIndex] = mapped;
+          } else {
+            // Sinon, ajouter le nouveau fichier au début de la liste
+            updatedFiles = [mapped, ...updatedFiles];
+          }
+          
+          // Supprimer les autres doublons potentiels (même nom/type/dossier mais ID différent)
+          updatedFiles = updatedFiles.filter((f) => {
+            if (f.id === mapped.id) return true; // Garder le fichier actuel
+            const isDuplicate = f.name === mapped.name && 
+                               f.fileType === mapped.fileType && 
+                               f.folderId === mapped.folderId;
+            return !isDuplicate; // Supprimer les doublons
+          });
+          
+          return {
+            files: updatedFiles,
+            currentFile: mapped,
+          };
+        });
+        
+        return mapped;
       },
 
       updateFile: async (id: string, updates: Partial<File>) => {
+        const payload: any = {};
+        if (updates.name !== undefined) payload.name = updates.name;
+        if (updates.folderId !== undefined) payload.folderId = updates.folderId;
+        if (updates.description !== undefined) payload.description = updates.description;
+        if (updates.content !== undefined) payload.content = updates.content;
+
+        const updated = await documentService.updateDocument(id, payload);
+
         set((state) => ({
           files: state.files.map((file) =>
             file.id === id
-              ? { ...file, ...updates, updatedAt: new Date(), isDirty: true }
+              ? {
+                  ...file,
+                  // Utiliser les valeurs des updates si disponibles, sinon celles de l'API, sinon les anciennes
+                  name: updates.name !== undefined ? updates.name : (updated.name ?? file.name),
+                  folderId: updates.folderId !== undefined ? updates.folderId : (updated.folder_id !== undefined ? updated.folder_id : file.folderId),
+                  description: updates.description !== undefined ? updates.description : (updated.description ?? file.description),
+                  content: updates.content !== undefined ? updates.content : (updated.content ?? file.content),
+                  updatedAt: new Date(updated.updated_at),
+                  isDirty: false,
+                }
               : file
           ),
           currentFile:
             state.currentFile?.id === id
-              ? { ...state.currentFile, ...updates, updatedAt: new Date(), isDirty: true }
+              ? {
+                  ...state.currentFile,
+                  name: updates.name !== undefined ? updates.name : (updated.name ?? state.currentFile.name),
+                  folderId: updates.folderId !== undefined ? updates.folderId : (updated.folder_id !== undefined ? updated.folder_id : state.currentFile.folderId),
+                  description: updates.description !== undefined ? updates.description : (updated.description ?? state.currentFile.description),
+                  content: updates.content !== undefined ? updates.content : (updated.content ?? state.currentFile.content),
+                  updatedAt: new Date(updated.updated_at),
+                  isDirty: false,
+                }
               : state.currentFile,
         }));
       },
 
       deleteFile: async (id: string) => {
+        await documentService.deleteDocument(id);
         set((state) => ({
           files: state.files.filter((file) => file.id !== id),
-          currentFile:
-            state.currentFile?.id === id ? null : state.currentFile,
+          currentFile: state.currentFile?.id === id ? null : state.currentFile,
         }));
       },
 
@@ -212,19 +220,16 @@ export const useDocumentStore = create<DocumentStore>()(
 
       saveFile: async (file: File) => {
         set({ isSaving: true });
-
-        // Simulation d'un appel API
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await documentService.updateDocument(file.id, {
+          name: file.name,
+          folderId: file.folderId,
+          description: file.description,
+          content: file.content,
+        });
 
         set((state) => ({
-          files: state.files.map((f) =>
-            f.id === file.id
-              ? { ...file, isDirty: false }
-              : f
-          ),
-          currentFile: file.id === state.currentFile?.id
-            ? { ...file, isDirty: false }
-            : state.currentFile,
+          files: state.files.map((f) => (f.id === file.id ? { ...file, isDirty: false } : f)),
+          currentFile: file.id === state.currentFile?.id ? { ...file, isDirty: false } : state.currentFile,
           isSaving: false,
           lastSaved: new Date(),
         }));
@@ -304,11 +309,43 @@ export const useDocumentStore = create<DocumentStore>()(
 
       loadFiles: async () => {
         set({ isLoading: true });
+        try {
+          const docs = await documentService.getDocuments();
+          const mapped: File[] = docs.map((d: any) => ({
+            id: d.id,
+            name: d.name,
+            fileType: d.file_type,
+            content: d.content,
+            folderId: d.folder_id,
+            description: d.description ?? undefined,
+            createdAt: new Date(d.created_at),
+            updatedAt: new Date(d.updated_at),
+            author: 'Moi',
+            tags: [],
+            size: d.size ?? undefined,
+            isDirty: false,
+          }));
+          set({ files: mapped });
+        } finally {
+          set({ isLoading: false });
+        }
+      },
 
-        // Simulation d'un appel API
-        await new Promise((resolve) => setTimeout(resolve, 500));
-
-        set({ isLoading: false });
+      loadFolders: async () => {
+        try {
+          const foldersData = await folderService.getFolders();
+          const mapped: Folder[] = foldersData.map((f: any) => ({
+            id: f.id,
+            name: f.name,
+            createdAt: new Date(f.created_at),
+            updatedAt: new Date(f.updated_at),
+            color: f.color || '#3b82f6',
+          }));
+          // Forcer une nouvelle référence pour garantir le re-render
+          set({ folders: [...mapped] });
+        } catch (error) {
+          console.error('Erreur lors du chargement des dossiers:', error);
+        }
       },
 
       // Actions pour l'upload de fichiers (uploadedFiles pour métadonnées)

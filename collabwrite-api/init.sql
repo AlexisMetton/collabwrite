@@ -35,15 +35,18 @@ CREATE TABLE IF NOT EXISTS folders (
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
--- Table des documents
 CREATE TABLE IF NOT EXISTS documents (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     owner_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    folder_id UUID NOT NULL REFERENCES folders(id) ON DELETE CASCADE,
+    folder_id UUID NULL REFERENCES folders(id) ON DELETE SET NULL,
+    name VARCHAR(255) NOT NULL,
+    file_type VARCHAR(10) NOT NULL CHECK (file_type IN ('txt','png','pdf')),
+    description TEXT,
     content TEXT NOT NULL,
-    file_path TEXT NOT NULL,
+    file_path TEXT,
+    size BIGINT,
     is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
-    created_ad TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -52,5 +55,7 @@ CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions(user_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_refresh_token ON sessions(refresh_token);
 CREATE INDEX IF NOT EXISTS idx_sessions_expires_at ON sessions(expires_at);
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_documents_owner_id ON documents(owner_id);
+CREATE INDEX IF NOT EXISTS idx_documents_folder_id ON documents(folder_id);
 
 -- L'utilisateur admin sera créé automatiquement par l'API au démarrage 

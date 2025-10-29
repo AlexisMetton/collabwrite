@@ -79,7 +79,7 @@ export function Header() {
                 {user && user.role === 'admin' && (
                   <Link to="/admin" onClick={() => setIsMenuOpen(false)}>
                     <Button variant="ghost" size="sm" className="w-full gap-2">
-                      Admin
+                      Gestion des utilisateurs
                     </Button>
                   </Link>
                 )}

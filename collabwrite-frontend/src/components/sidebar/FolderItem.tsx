@@ -3,6 +3,7 @@ import { DeleteFileModal } from "@/components/modals/DeleteFileModal";
 import { DeleteFolderModal } from "@/components/modals/DeleteFolderModal";
 import { RenameFileModal } from "@/components/modals/RenameFileModal";
 import { RenameFolderModal } from "@/components/modals/RenameFolderModal";
+import { MoveFileModal } from "@/components/modals/MoveFileModal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -24,9 +25,10 @@ import {
   Folder,
   Image,
   MoreHorizontal,
+  Move,
   Plus,
 } from "lucide-react";
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { folderService } from "@/services/folder.service";
 
@@ -39,20 +41,20 @@ export const FolderItem: React.FC<FolderItemProps> = ({
   folder,
   fileTypeFilter = "all",
 }) => {
-  const {
-    currentFile,
-    setCurrentFile,
-    createFile,
-    updateFolder,
-    updateFile,
-    deleteFile,
-    files,
-    searchQuery,
-    sortBy,
-    sortOrder,
-  } = useDocumentStore();
+  const currentFile = useDocumentStore((state) => state.currentFile);
+  const setCurrentFile = useDocumentStore((state) => state.setCurrentFile);
+  const createFile = useDocumentStore((state) => state.createFile);
+  const updateFile = useDocumentStore((state) => state.updateFile);
+  const updateFolder = useDocumentStore((state) => state.updateFolder);
+  const deleteFile = useDocumentStore((state) => state.deleteFile);
+  const deleteFolder = useDocumentStore((state) => state.deleteFolder);
+  const loadFolders = useDocumentStore((state) => state.loadFolders);
+  const files = useDocumentStore((state) => state.files);
+  const folders = useDocumentStore((state) => state.folders);
+  const searchQuery = useDocumentStore((state) => state.searchQuery);
+  const sortBy = useDocumentStore((state) => state.sortBy);
+  const sortOrder = useDocumentStore((state) => state.sortOrder);
   const navigate = useNavigate();
-  const [error, setError] = useState("");
   const [isExpanded, setIsExpanded] = useState(false);
   const [showRenameModal, setShowRenameModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -61,6 +63,14 @@ export const FolderItem: React.FC<FolderItemProps> = ({
   const [showDeleteFileModal, setShowDeleteFileModal] = useState(false);
   const [showCreateFileModal, setShowCreateFileModal] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [selectedFileForMove, setSelectedFileForMove] = useState<File | null>(null);
+  const [showMoveFileModal, setShowMoveFileModal] = useState(false);
+
+  // Récupérer le dossier mis à jour depuis le store au lieu d'utiliser uniquement la prop
+  // Utiliser useMemo pour éviter les recalculs inutiles
+  const folderFromStore = useMemo(() => {
+    return folders.find(f => f.id === folder.id) || folder;
+  }, [folders, folder]);
 
   // Récupérer les fichiers de ce dossier depuis le store
   let folderFiles = files.filter((file) => file.folderId === folder.id);
@@ -162,8 +172,9 @@ export const FolderItem: React.FC<FolderItemProps> = ({
       setCurrentFile(file);
       navigate(`/editor/${file.id}`);
     } else {
-      // Pour png/pdf, ouvrir directement dans un nouvel onglet sans changer le fichier actuel
-      window.open(file.content, "_blank");
+      // Pour png/pdf, naviguer vers le viewer dédié
+      setCurrentFile(file);
+      navigate(`/viewer/${file.id}`);
     }
   };
 
@@ -173,11 +184,20 @@ export const FolderItem: React.FC<FolderItemProps> = ({
 
   const handleConfirmRename = async (oldname: string, newname: string) => {
     try{
-      await folderService.updateFolder({ oldname, newname })
+      // Mise à jour optimiste dans le store
+      const folderToUpdate = folders.find(f => f.name === oldname);
+      if (folderToUpdate) {
+        updateFolder(folderToUpdate.id, { name: newname });
+      }
+      // Puis mettre à jour depuis l'API
+      await folderService.updateFolder({ oldname, newname });
+      await loadFolders();
+      setShowRenameModal(false);
     }
     catch (err: unknown){
-      const error = err as { response?: { data?: { error?: string } } }
-      setError(error.response?.data?.error || "Erreur lors de la mise à jour d'un dossier.")
+      // En cas d'erreur, recharger pour restaurer l'état correct
+      await loadFolders();
+      console.error("Erreur lors de la mise à jour d'un dossier:", err);
     }
   };
 
@@ -187,11 +207,21 @@ export const FolderItem: React.FC<FolderItemProps> = ({
 
   const handleConfirmDelete =  async (name: string) => {
     try{
-      await folderService.deleteFolder({ name })
+      // Mise à jour optimiste dans le store
+      const folderToDelete = folders.find(f => f.name === name);
+      if (folderToDelete) {
+        deleteFolder(folderToDelete.id);
+      }
+      // Puis supprimer depuis l'API
+      await folderService.deleteFolder({ name });
+      // Recharger depuis l'API pour s'assurer que tout est synchronisé
+      await loadFolders();
+      setShowDeleteModal(false);
     }
     catch (err: unknown){
-      const error = err as { response?: { data?: { error?: string } } }
-      setError(error.response?.data?.error || "Erreur lors de la suppression d'un dossier.")
+      // En cas d'erreur, recharger pour restaurer l'état correct
+      await loadFolders();
+      console.error("Erreur lors de la suppression d'un dossier:", err);
     }
   };
 
@@ -303,10 +333,10 @@ export const FolderItem: React.FC<FolderItemProps> = ({
             >
               <Folder
                 className="h-4 w-4 flex-shrink-0"
-                style={{ color: folder.color || "#3b82f6" }}
+                style={{ color: folderFromStore.color || "#3b82f6" }}
               />
               <span className="font-medium text-sm text-foreground truncate">
-                {folder.name}
+                {folderFromStore.name}
               </span>
               <Badge variant="secondary" className="text-xs">
                 {folderFiles.length}
@@ -374,6 +404,20 @@ export const FolderItem: React.FC<FolderItemProps> = ({
                     {file.isDirty && (
                       <div className="w-2 h-2 bg-orange-500 rounded-full flex-shrink-0" />
                     )}
+                    {/* Bouton Déplacer visible sur mobile */}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-5 w-5 p-0 md:hidden opacity-70 hover:opacity-100"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedFileForMove(file);
+                        setShowMoveFileModal(true);
+                      }}
+                      title="Déplacer vers un dossier"
+                    >
+                      <Move className="h-3 w-3" />
+                    </Button>
                     <DropdownMenu>
                       <DropdownMenuTrigger
                         asChild
@@ -443,7 +487,7 @@ export const FolderItem: React.FC<FolderItemProps> = ({
         isOpen={showRenameModal}
         onClose={() => setShowRenameModal(false)}
         onConfirm={handleConfirmRename}
-        currentName={folder.name}
+        currentName={folderFromStore.name}
       />
 
       <DeleteFolderModal
@@ -485,6 +529,16 @@ export const FolderItem: React.FC<FolderItemProps> = ({
           />
         </>
       )}
+      
+      {/* Modal de déplacement de fichier */}
+      <MoveFileModal
+        isOpen={showMoveFileModal}
+        onClose={() => {
+          setShowMoveFileModal(false);
+          setSelectedFileForMove(null);
+        }}
+        file={selectedFileForMove}
+      />
     </div>
   );
 };

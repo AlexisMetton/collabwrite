@@ -4,6 +4,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import authRoutes from "./src/routes/auth.routes.js";
 import folderRoutes from "./src/routes/folder.routes.js";
+import documentRoutes from "./src/routes/document.routes.js";
 import { errorHandler } from "./src/middleware/error.middleware.js";
 import { adminService } from "./src/services/admin.service.js";
 
@@ -17,12 +18,15 @@ app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:5173',
   credentials: true,
 }));
-app.use(express.json());
+// Augmenter la limite de taille pour les fichiers images/PDFs en Data URL (50 MB)
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(cookieParser());
 
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/folder', folderRoutes);
+app.use('/api/document', documentRoutes);
 
 app.get("/", (req: Request, res: Response) => {
     res.send("Hello World!");

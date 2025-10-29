@@ -1,50 +1,51 @@
 import { useDocumentStore } from "@/hooks/useDocumentStore";
 import { FileText } from "lucide-react";
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useEffect } from "react";
 import { EmptyState } from "../ui/EmptyState";
 import { DocumentItem } from "./DocumentItem";
 import { FolderItem } from "./FolderItem";
-import { folderService } from "@/services/folder.service";
 
 interface FolderListProps {
   fileTypeFilter?: "all" | "txt" | "image" | "pdf";
+  refreshKey?: number;
 }
 
 export const FolderList: React.FC<FolderListProps> = ({
   fileTypeFilter = "all",
+  refreshKey = 0,
 }) => {
-  const {
-    isLoading,
-    files,
-    searchQuery,
-    sortBy,
-    sortOrder,
-    updateFile,
-  } = useDocumentStore();
+  const files = useDocumentStore((state) => state.files);
+  const folders = useDocumentStore((state) => state.folders);
+  const searchQuery = useDocumentStore((state) => state.searchQuery);
+  const sortBy = useDocumentStore((state) => state.sortBy);
+  const sortOrder = useDocumentStore((state) => state.sortOrder);
+  const isLoading = useDocumentStore((state) => state.isLoading);
+  const updateFile = useDocumentStore((state) => state.updateFile);
+  const loadFiles = useDocumentStore((state) => state.loadFiles);
+  const loadFolders = useDocumentStore((state) => state.loadFolders);
   const [isDragOverRoot, setIsDragOverRoot] = React.useState(false);
-
-  const [error, setError] = useState("");
-  const [folders, setFolders] = useState([]);
-  
-  const getFolders = async () => {
-    try{
-      const folders = await folderService.getFolders();
-      setFolders(folders);
-    }
-    catch (err: unknown) {
-      const error = err as { response?: { data?: { error?: string } } }
-      setError(error.response?.data?.error || "Erreur lors de la récupération des dossiers.")
-    }
-  }
 
     // Mémoriser les résultats de recherche et filtrage pour améliorer les performances
   const { visibleFolders, rootFiles } = useMemo(() => {
     const searchLower = searchQuery.toLowerCase();
 
     // Filtrer les dossiers qui contiennent des fichiers correspondant à la recherche
+    // Quand il n'y a pas de recherche, afficher tous les dossiers
     const filteredFolders = folders.filter((folder) => {
-      if (!searchQuery) return true;
+      if (!searchQuery) {
+        // Sans recherche, afficher tous les dossiers (même vides)
+        // Appliquer le filtre de type sur les fichiers du dossier pour l'affichage
+        const folderFiles = files.filter((file) => file.folderId === folder.id);
+        const filteredFolderFiles = fileTypeFilter === "all" 
+          ? folderFiles
+          : fileTypeFilter === "image"
+          ? folderFiles.filter((file) => file.fileType === "png")
+          : folderFiles.filter((file) => file.fileType === fileTypeFilter);
+        // Afficher le dossier s'il est vide OU s'il contient des fichiers correspondant au filtre
+        return folderFiles.length === 0 || filteredFolderFiles.length > 0;
+      }
 
+      // Avec recherche, filtrer les dossiers qui contiennent des fichiers correspondants
       const folderFiles = files.filter((file) => file.folderId === folder.id);
       const matchingFiles = folderFiles.filter(
         (file) =>
@@ -114,8 +115,10 @@ export const FolderList: React.FC<FolderListProps> = ({
   }, [files, folders, searchQuery, fileTypeFilter, sortBy, sortOrder]);
   
   useEffect(() => {
-    getFolders();
-  }, []);
+    loadFolders();
+    loadFiles();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refreshKey]);
 
   if (isLoading) {
     return (
@@ -123,23 +126,6 @@ export const FolderList: React.FC<FolderListProps> = ({
         {Array.from({ length: 3 }).map((_, index) => (
           <div key={index} className="h-16 bg-muted rounded-lg animate-pulse" />
         ))}
-      </div>
-    );
-  }
-
-  if (folders.length === 0) {
-    return (
-      <div className="p-4">
-        <EmptyState
-          title="Aucun dossier"
-          description="Créez votre premier dossier pour organiser vos pages."
-          action={{
-            label: "Créer un dossier",
-            onClick: () => {
-              console.log("Créer un dossier");
-            },
-          }}
-        />
       </div>
     );
   }
