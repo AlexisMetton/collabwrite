@@ -1,5 +1,6 @@
 import { CreateFileModal } from "@/components/modals/CreateFileModal";
 import { DeleteConfirmModal } from "@/components/modals/DeleteConfirmModal";
+import { MoveFileModal } from "@/components/modals/MoveFileModal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -9,13 +10,13 @@ import { useDocumentStore } from "@/hooks/useDocumentStore";
 import type { File, FileType } from "@/types/document";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Calendar, Edit, FileText, Plus, Trash2, User } from "lucide-react";
+import { Calendar, Edit, FileText, FileType as FileTypeIcon, Folder as FolderIcon, Image as ImageIcon, Move, Plus, Trash2, User } from "lucide-react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
-  const { files, isLoading, setCurrentFile, deleteFile, createFile } =
+  const { files, folders, isLoading, setCurrentFile, deleteFile, createFile } =
     useDocumentStore();
 
   const [deleteModal, setDeleteModal] = useState<{
@@ -23,6 +24,16 @@ export const DashboardPage: React.FC = () => {
     file?: File;
   }>({ isOpen: false });
   const [showCreateFileModal, setShowCreateFileModal] = useState(false);
+  const [moveFileModal, setMoveFileModal] = useState<{
+    isOpen: boolean;
+    file?: File;
+  }>({ isOpen: false });
+
+  // Charger les dossiers au montage du composant
+  React.useEffect(() => {
+    const loadFolders = useDocumentStore.getState().loadFolders;
+    loadFolders();
+  }, []);
 
   const handleCreateFile = () => {
     setShowCreateFileModal(true);
@@ -43,6 +54,9 @@ export const DashboardPage: React.FC = () => {
 
     if (fileType === "txt") {
       navigate(`/editor/${newFile.id}`);
+    } else {
+      // Pour les images et PDFs, naviguer vers le viewer
+      navigate(`/viewer/${newFile.id}`);
     }
   };
 
@@ -52,8 +66,9 @@ export const DashboardPage: React.FC = () => {
       setCurrentFile(file);
       navigate(`/editor/${file.id}`);
     } else {
-      // Pour png/pdf, ouvrir directement dans un nouvel onglet sans changer le fichier actuel
-      window.open(file.content, "_blank");
+      // Pour png/pdf, naviguer vers le viewer dédié
+      setCurrentFile(file);
+      navigate(`/viewer/${file.id}`);
     }
   };
 
@@ -72,16 +87,39 @@ export const DashboardPage: React.FC = () => {
     return formatDistanceToNow(date, { addSuffix: true, locale: fr });
   };
 
+  const getFileIcon = (fileType: FileType) => {
+    switch (fileType) {
+      case 'png':
+        return <ImageIcon className="h-4 w-4 text-green-600 flex-shrink-0" />;
+      case 'pdf':
+        return <FileTypeIcon className="h-4 w-4 text-red-600 flex-shrink-0" />;
+      default:
+        return <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />;
+    }
+  };
+
+  const handleMoveFile = (file: File) => {
+    setMoveFileModal({ isOpen: true, file });
+  };
+
   const recentFiles = files
     .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
     .slice(0, 5);
 
+  const recentFolders = folders
+    .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
+    .slice(0, 5);
+
+  const getFolderFileCount = (folderId: string) => {
+    return files.filter(f => f.folderId === folderId).length;
+  };
+
   if (isLoading) {
     return (
-      <div className="p-6 space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {Array.from({ length: 3 }).map((_, index) => (
-            <Card key={index} className="p-4 animate-pulse">
+      <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <Card key={index} className="p-3 sm:p-4 animate-pulse">
               <div className="space-y-2">
                 <div className="h-4 bg-muted rounded w-3/4"></div>
                 <div className="h-8 bg-muted rounded w-1/2"></div>
@@ -95,27 +133,71 @@ export const DashboardPage: React.FC = () => {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
       {/* En-tête */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
             Tableau de bord
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-sm sm:text-base text-muted-foreground mt-1">
             Gérez vos documents et suivez votre activité
           </p>
         </div>
-        <Button onClick={handleCreateFile} size="lg">
-          <Plus className="h-5 w-5 mr-2" />
-          Nouveau fichier
+        <Button 
+          onClick={handleCreateFile} 
+          size="lg"
+          className="w-full sm:w-auto"
+        >
+          <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+          <span className="text-sm sm:text-base">Nouveau fichier</span>
         </Button>
       </div>
 
+      {/* Dossiers récents */}
+      {recentFolders.length > 0 && (
+        <div className="space-y-3 sm:space-y-4">
+          <div>
+            <h2 className="text-lg sm:text-xl font-semibold text-foreground">
+              Dossiers récents
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+            {recentFolders.map((folder) => (
+              <Card
+                key={folder.id}
+                className="p-3 sm:p-4 hover:shadow-md transition-shadow cursor-pointer"
+                onClick={() => navigate("/dashboard")}
+                style={{height: 'fit-content !important'}}
+              >
+                <div className="space-y-2 sm:space-y-3">
+                  <div className="flex items-center gap-2">
+                    <FolderIcon
+                      className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0"
+                      style={{ color: folder.color || "#3b82f6" }}
+                    />
+                    <h3 className="font-medium text-xs sm:text-sm text-foreground truncate flex-1">
+                      {folder.name}
+                    </h3>
+                    <Badge variant="secondary" className="text-xs">
+                      {getFolderFileCount(folder.id)}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <Calendar className="h-3 w-3 flex-shrink-0" />
+                    <span className="truncate">{formatDate(folder.updatedAt)}</span>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Documents récents */}
-      <div className="space-y-4">
+      <div className="space-y-3 sm:space-y-4">
         <div>
-          <h2 className="text-xl font-semibold text-foreground">
+          <h2 className="text-lg sm:text-xl font-semibold text-foreground">
             Fichiers récents
           </h2>
         </div>
@@ -130,18 +212,18 @@ export const DashboardPage: React.FC = () => {
             }}
           />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
             {recentFiles.map((file) => (
               <Card
                 key={file.id}
-                className="p-4 hover:shadow-md transition-shadow"
+                className="p-3 sm:p-4 hover:shadow-md transition-shadow"
               >
-                <div className="space-y-3">
+                <div className="space-y-2 sm:space-y-3">
                   {/* En-tête */}
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-2 min-w-0 flex-1">
-                      <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                      <h3 className="font-medium text-sm text-foreground truncate">
+                      {getFileIcon(file.fileType)}
+                      <h3 className="font-medium text-xs sm:text-sm text-foreground truncate">
                         {file.name}
                       </h3>
                       {file.isDirty && (
@@ -157,16 +239,29 @@ export const DashboardPage: React.FC = () => {
                     </p>
                   )}
 
+                  {/* Badge du dossier si présent */}
+                  {file.folderId && (() => {
+                    const folder = folders.find(f => f.id === file.folderId);
+                    return folder ? (
+                      <div className="flex items-center gap-1">
+                        <Badge variant="outline" className="text-xs flex items-center gap-1">
+                          <FolderIcon className="h-3 w-3" style={{ color: folder.color || '#3b82f6' }} />
+                          <span className="truncate">{folder.name}</span>
+                        </Badge>
+                      </div>
+                    ) : null;
+                  })()}
+
                   {/* Métadonnées */}
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0 text-xs text-muted-foreground">
                       <div className="flex items-center gap-1">
-                        <User className="h-3 w-3" />
-                        {file.author}
+                        <User className="h-3 w-3 flex-shrink-0" />
+                        <span className="truncate">{file.author}</span>
                       </div>
                       <div className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        {formatDate(file.updatedAt)}
+                        <Calendar className="h-3 w-3 flex-shrink-0" />
+                        <span className="truncate">{formatDate(file.updatedAt)}</span>
                       </div>
                     </div>
 
@@ -197,16 +292,29 @@ export const DashboardPage: React.FC = () => {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleEditFile(file)}
-                      className="flex-1"
+                      className="flex-1 text-xs sm:text-sm"
                     >
-                      <Edit className="h-3 w-3 mr-1" />
-                      Ouvrir
+                      <Edit className="h-3 w-3 sm:mr-1" />
+                      <span className="hidden sm:inline">Ouvrir</span>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleMoveFile(file);
+                      }}
+                      className="md:hidden px-2 text-xs"
+                      title="Déplacer vers un dossier"
+                    >
+                      <Move className="h-3 w-3" />
                     </Button>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => handleDeleteFile(file)}
-                      className="text-destructive hover:text-destructive"
+                      className="text-destructive hover:text-destructive px-2 sm:px-3"
+                      aria-label="Supprimer"
                     >
                       <Trash2 className="h-3 w-3" />
                     </Button>
@@ -231,6 +339,12 @@ export const DashboardPage: React.FC = () => {
         onConfirm={handleConfirmDelete}
         itemName={deleteModal.file?.name}
         warningMessage="Le contenu de ce fichier sera définitivement perdu."
+      />
+
+      <MoveFileModal
+        isOpen={moveFileModal.isOpen}
+        onClose={() => setMoveFileModal({ isOpen: false })}
+        file={moveFileModal.file || null}
       />
     </div>
   );

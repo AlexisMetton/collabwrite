@@ -19,6 +19,7 @@ import { ProfilePage } from "./pages/ProfilePage";
 import { AdminDashboard } from "./pages/AdminDashboard";
 import DocumentEditorPage from "./pages/DocumentEditorPage";
 import EditorPage from "./pages/EditorPage";
+import FileViewerPage from "./pages/FileViewerPage";
 
 // Layout pour les pages sans header/footer (login, register)
 function AuthLayout({ children }: { children: React.ReactNode }) {
@@ -103,6 +104,16 @@ function App() {
               <ProtectedRoute>
                 <DashboardLayout>
                   <EditorPage />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/viewer/:fileId"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <FileViewerPage />
                 </DashboardLayout>
               </ProtectedRoute>
             }

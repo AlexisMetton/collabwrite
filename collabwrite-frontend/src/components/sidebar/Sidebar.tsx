@@ -27,11 +27,12 @@ export const Sidebar: React.FC = () => {
     sortOrder,
     sortFiles,
     createFile,
+    loadFolders,
   } = useDocumentStore();
-  const [error, setError] = useState("");
   const [showCreateFolderModal, setShowCreateFolderModal] = useState(false);
   const [showCreateFileModal, setShowCreateFileModal] = useState(false);
   const [showFilterModal, setShowFilterModal] = useState(false);
+  const [folderListRefreshKey, setFolderListRefreshKey] = useState(0);
   const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery);
   const [fileTypeFilter, setFileTypeFilter] = useState<
     "all" | "txt" | "image" | "pdf"
@@ -95,10 +96,14 @@ export const Sidebar: React.FC = () => {
   const handleConfirmCreateFolder = async (name: string, color: string) => {
     try{
       await folderService.createFolder({ name, color });
+      // Recharger les dossiers depuis l'API pour mettre à jour le store
+      await loadFolders();
+      // Rafraîchir aussi la liste pour s'assurer que tout est à jour
+      setFolderListRefreshKey((prev) => prev + 1);
     }
     catch (err: unknown){
       const error = err as { response?: { data?: { error?: string } } }
-      setError(error.response?.data?.error || "Erreur lors de l'ajout du dossier")
+      console.error(error.response?.data?.error || "Erreur lors de l'ajout du dossier", err);
     }
   };
 
@@ -176,7 +181,7 @@ export const Sidebar: React.FC = () => {
             </div>
           </div>
         )}
-        <FolderList fileTypeFilter={fileTypeFilter} />
+        <FolderList fileTypeFilter={fileTypeFilter} refreshKey={folderListRefreshKey} />
       </div>
 
       {/* Modales */}

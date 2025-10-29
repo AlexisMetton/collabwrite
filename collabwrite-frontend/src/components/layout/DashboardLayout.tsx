@@ -46,13 +46,13 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         )}
 
         {/* Sidebar Desktop */}
-        <aside className="w-80 border-r bg-background hidden md:block">
+        <aside className="w-64 lg:w-80 border-r bg-background hidden md:block">
           <Sidebar />
         </aside>
 
         {/* Sidebar Mobile */}
         <aside
-          className={`md:hidden fixed left-0 top-0 bottom-0 w-80 border-r bg-background z-50 transition-transform duration-300 ${
+          className={`md:hidden fixed left-0 top-0 bottom-0 w-[85vw] max-w-80 border-r bg-background z-50 transition-transform duration-300 ${
             isSidebarOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >

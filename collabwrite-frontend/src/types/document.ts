@@ -87,6 +87,7 @@ export interface DocumentStore {
   toggleTheme: () => void;
   updatePreferences: (preferences: Partial<UserPreferences>) => void;
   loadFiles: () => Promise<void>;
+  loadFolders: () => Promise<void>;
 
   // Actions pour l'upload de fichiers
   uploadFileData: (file: globalThis.File, fileId?: string) => Promise<UploadedFile>;
