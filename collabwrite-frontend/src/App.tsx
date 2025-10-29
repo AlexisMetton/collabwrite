@@ -19,6 +19,8 @@ import { AdminDashboard } from "./pages/AdminDashboard";
 import DocumentEditorPage from "./pages/DocumentEditorPage";
 import EditorPage from "./pages/EditorPage";
 import FileViewerPage from "./pages/FileViewerPage";
+import { MyDocumentsPage } from "./pages/MyDocumentsPage";
+import { MyFoldersPage } from "./pages/MyFoldersPage";
 
 // Layout pour les pages sans header/footer (login, register)
 function AuthLayout({ children }: { children: React.ReactNode }) {
@@ -82,6 +84,26 @@ function App() {
               <ProtectedRoute>
                 <DashboardLayout>
                   <DashboardPage />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-documents"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <MyDocumentsPage />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-folders"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <MyFoldersPage />
                 </DashboardLayout>
               </ProtectedRoute>
             }
