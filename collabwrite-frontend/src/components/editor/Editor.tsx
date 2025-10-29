@@ -71,11 +71,12 @@ import {
   Pagination,
   Template,
 } from "ckeditor5-premium-features";
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
+import { InviteCollaboratorModal } from "../modals/InviteCollaboratorModal";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Download, Save } from "lucide-react";
+import { Download, Save, UserPlus } from "lucide-react";
 
 import "ckeditor5-premium-features/ckeditor5-premium-features.css";
 import "ckeditor5/ckeditor5.css";
@@ -100,6 +101,7 @@ export const Editor: React.FC<EditorProps> = ({
 }) => {
   const editorRef = useRef<DecoupledEditor | null>(null);
   const toolbarRef = useRef<HTMLDivElement>(null);
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
 
   const editorConfig = useMemo(
     () => ({
@@ -348,7 +350,24 @@ export const Editor: React.FC<EditorProps> = ({
               Exporter
             </Button>
           </div>
+          <div>
+            <Button
+              variant="default"
+              size="sm"
+              onClick={() => setIsInviteModalOpen(true)}
+            >
+              <UserPlus className="h-4 w-4 mr-2" />
+              Inviter
+            </Button>
+          </div>
         </div>
+
+        {/* Modale d'invitation */}
+        <InviteCollaboratorModal
+          isOpen={isInviteModalOpen}
+          onClose={() => setIsInviteModalOpen(false)}
+          documentName="Document de collaboration"
+        />
 
         {/* Barre d'outils CKEditor */}
         <div ref={toolbarRef} className="border rounded-lg p-2 bg-muted/50" />

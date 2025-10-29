@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
+import { Toaster } from "sonner";
 
 // Layouts & Components
 import { Header } from "./components/Header";
@@ -42,8 +43,9 @@ function App() {
   return (
     <AuthProvider>
       <Router>
+        <Toaster position="top-right" richColors />
         <Routes>
-         
+
           <Route
             path="/"
             element={
@@ -55,7 +57,7 @@ function App() {
             }
           />
 
-          
+
           <Route
             path="/login"
             element={
@@ -77,7 +79,7 @@ function App() {
             }
           />
 
-         
+
           <Route
             path="/dashboard"
             element={
@@ -147,7 +149,7 @@ function App() {
                 </DashboardLayout>
               </ProtectedRoute>
             }
-          />        
+          />
           <Route
             path="/admin"
             element={
