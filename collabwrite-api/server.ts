@@ -15,17 +15,13 @@ dotenv.config();
 const app = express();
 const port = process.env.EXPRESS_PORT || 4000;
 
-// Routes
-app.use("/api/auth", authRoutes);
-app.use("/api/folder", folderRoutes);
-app.use("/api/invite", inviteRoutes);
-app.use('/api/document', documentRoutes);
-
-// Middleware
+// Middleware - CORS doit être configuré AVANT les routes
 app.use(
   cors({
     origin: process.env.FRONTEND_URL || "http://localhost:5173",
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
 // Augmenter la limite de taille pour les fichiers images/PDFs en Data URL (50 MB)
@@ -36,6 +32,7 @@ app.use(cookieParser());
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/folder', folderRoutes);
+app.use('/api/invite', inviteRoutes);
 app.use('/api/document', documentRoutes);
 app.use('/api/messages', messageRoutes);
 
