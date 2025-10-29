@@ -56,19 +56,20 @@ export const CreateFileModal: React.FC<CreateFileModalProps> = ({
     setSelectedType(type);
     if(type == "folder"){
       setIsCreateFolderOpen(true);
-      //handleClose();
     }
     setStep("details");
   };
 
   const handleCloseModal = () => {
     setIsCreateFolderOpen(false);
+    handleClose();
   }
 
   const handleConfirmCreateFolder = async (name: string, color: string, folderId: string | null) => {
     try {
       await folderService.createFolder({ name, color, folderId });
       await loadFolders();
+      handleClose();
     }
     catch (err: unknown){
       const error = err as { response?: { data?: { error?: string } } }
