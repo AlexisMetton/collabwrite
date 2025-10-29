@@ -47,10 +47,7 @@ export const CreateFolderModal: React.FC<CreateFolderModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (folderName.trim()) {
-      if(!folderId){
-        folderId = null;
-      }
-      onConfirm(folderName.trim(), selectedColor, folderId);
+      onConfirm(folderName.trim(), selectedColor, folderId ?? null);
       setFolderName('');
       setSelectedColor(FOLDER_COLORS[0].value);
       onClose();

@@ -58,7 +58,8 @@ export const FolderItem: React.FC<FolderItemProps> = ({
   const [isExpanded, setIsExpanded] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [showRenameFileModal, setShowRenameFileModal] = useState(false);
-  const [showDeleteFileModal, setShowDeleteFileModal] = useState(false);  const [isDragOver, setIsDragOver] = useState(false);
+  const [showDeleteFileModal, setShowDeleteFileModal] = useState(false);  
+  const [isDragOver, setIsDragOver] = useState(false);
   const [selectedFileForMove, setSelectedFileForMove] = useState<File | null>(null);
   const [showMoveFileModal, setShowMoveFileModal] = useState(false);
   const [folderForCreateFile, setFolderForCreateFile] = useState<FolderType | null>(null);
@@ -388,7 +389,6 @@ export const FolderItem: React.FC<FolderItemProps> = ({
           {/* Modale de création de fichier */}
           <CreateFileModal
             isOpen={!!folderForCreateFile}
-            onClose={() => setFolderForCreateFile(null)}
             onConfirm={handleConfirmCreateFile}
             folderId={folderForCreateFile?.id || ""}
           />

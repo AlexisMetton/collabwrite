@@ -53,7 +53,7 @@ export const CreateFileModal: React.FC<CreateFileModalProps> = ({
     setSelectedType(type);
     if(type == "folder"){
       setIsCreateFolderOpen(true);
-      handleClose();
+      //handleClose();
     }
     setStep("details");
   };
