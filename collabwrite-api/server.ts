@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import authRoutes from "./src/routes/auth.routes.js";
 import folderRoutes from "./src/routes/folder.routes.js";
 import documentRoutes from "./src/routes/document.routes.js";
+import messageRoutes from "./src/routes/message.routes.js";
 import { errorHandler } from "./src/middleware/error.middleware.js";
 import { adminService } from "./src/services/admin.service.js";
 
@@ -27,6 +28,7 @@ app.use(cookieParser());
 app.use('/api/auth', authRoutes);
 app.use('/api/folder', folderRoutes);
 app.use('/api/document', documentRoutes);
+app.use('/api/messages', messageRoutes);
 
 app.get("/", (req: Request, res: Response) => {
     res.send("Hello World!");
@@ -37,7 +39,7 @@ app.use(errorHandler);
 
 app.listen(port, async () => {
     console.log(`API running on port ${port}`);
-    
+
     // Initialiser l'utilisateur admin par défaut
     await adminService.createDefaultAdmin();
 });
