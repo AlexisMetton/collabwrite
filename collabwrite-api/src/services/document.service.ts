@@ -31,6 +31,15 @@ export const documentService = {
     return result.rows[0] || null;
   },
 
+  async getDocumentByNameAndFolder(ownerId: string, name: string, fileType: 'txt' | 'png' | 'pdf', folderId: string | null) {
+    const result = await pool.query<DocumentRow>(
+      `SELECT * FROM documents 
+       WHERE owner_id = $1 AND name = $2 AND file_type = $3 AND folder_id IS NOT DISTINCT FROM $4 AND is_deleted = FALSE`,
+      [ownerId, name, fileType, folderId]
+    );
+    return result.rows[0] || null;
+  },
+
   async createDocument(ownerId: string, data: {
     name: string;
     fileType: 'txt' | 'png' | 'pdf';
@@ -40,10 +49,25 @@ export const documentService = {
     filePath?: string | null;
     size?: number | null;
   }) {
+    const { name, fileType, folderId = null, description = null, content, filePath = null, size = null } = data;
+
+    // Vérifier si un document avec le même nom, type et dossier existe déjà
+    const existing = await this.getDocumentByNameAndFolder(ownerId, name, fileType, folderId);
+    
+    if (existing) {
+      // Si un document existe, le mettre à jour au lieu d'en créer un nouveau
+      const updated = await this.updateDocument(existing.id, ownerId, {
+        content,
+        description,
+        filePath,
+        size,
+      });
+      return updated || existing;
+    }
+
+    // Sinon, créer un nouveau document
     const newIdResult = await pool.query('SELECT gen_random_uuid() as id');
     const id = newIdResult.rows[0].id as string;
-
-    const { name, fileType, folderId = null, description = null, content, filePath = null, size = null } = data;
 
     const result = await pool.query<DocumentRow>(
       `INSERT INTO documents (id, owner_id, folder_id, name, file_type, description, content, file_path, size, created_at, updated_at)
@@ -60,6 +84,8 @@ export const documentService = {
     folderId?: string | null;
     description?: string | null;
     content?: string | null;
+    filePath?: string | null;
+    size?: number | null;
   }) {
     const fields: string[] = [];
     const values: any[] = [];
@@ -79,6 +105,14 @@ export const documentService = {
     if (updates.content !== undefined) {
       fields.push('content');
       values.push(updates.content);
+    }
+    if (updates.filePath !== undefined) {
+      fields.push('file_path');
+      values.push(updates.filePath);
+    }
+    if (updates.size !== undefined) {
+      fields.push('size');
+      values.push(updates.size);
     }
 
     if (fields.length === 0) {

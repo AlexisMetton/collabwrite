@@ -124,7 +124,46 @@ export const useDocumentStore = create<DocumentStore>()(
           isDirty: false,
         };
 
-        set((state) => ({ files: [mapped, ...state.files], currentFile: mapped }));
+        set((state) => {
+          // Vérifier si le fichier existe déjà dans le store (même id)
+          const existingIndex = state.files.findIndex(f => f.id === mapped.id);
+          
+          // Vérifier aussi s'il existe un fichier avec le même nom, type et dossier (pour éviter les doublons)
+          const duplicateIndex = state.files.findIndex(f => 
+            f.id !== mapped.id && 
+            f.name === mapped.name && 
+            f.fileType === mapped.fileType && 
+            f.folderId === mapped.folderId
+          );
+          
+          let updatedFiles = [...state.files];
+          
+          if (existingIndex >= 0) {
+            // Si le fichier existe avec le même ID, le remplacer
+            updatedFiles[existingIndex] = mapped;
+          } else if (duplicateIndex >= 0) {
+            // Si un fichier avec le même nom/type/dossier existe mais avec un ID différent, le remplacer
+            updatedFiles[duplicateIndex] = mapped;
+          } else {
+            // Sinon, ajouter le nouveau fichier au début de la liste
+            updatedFiles = [mapped, ...updatedFiles];
+          }
+          
+          // Supprimer les autres doublons potentiels (même nom/type/dossier mais ID différent)
+          updatedFiles = updatedFiles.filter((f) => {
+            if (f.id === mapped.id) return true; // Garder le fichier actuel
+            const isDuplicate = f.name === mapped.name && 
+                               f.fileType === mapped.fileType && 
+                               f.folderId === mapped.folderId;
+            return !isDuplicate; // Supprimer les doublons
+          });
+          
+          return {
+            files: updatedFiles,
+            currentFile: mapped,
+          };
+        });
+        
         return mapped;
       },
 
@@ -302,7 +341,8 @@ export const useDocumentStore = create<DocumentStore>()(
             updatedAt: new Date(f.updated_at),
             color: f.color || '#3b82f6',
           }));
-          set({ folders: mapped });
+          // Forcer une nouvelle référence pour garantir le re-render
+          set({ folders: [...mapped] });
         } catch (error) {
           console.error('Erreur lors du chargement des dossiers:', error);
         }

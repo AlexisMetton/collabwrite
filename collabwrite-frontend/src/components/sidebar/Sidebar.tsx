@@ -27,6 +27,7 @@ export const Sidebar: React.FC = () => {
     sortOrder,
     sortFiles,
     createFile,
+    loadFolders,
   } = useDocumentStore();
   const [showCreateFolderModal, setShowCreateFolderModal] = useState(false);
   const [showCreateFileModal, setShowCreateFileModal] = useState(false);
@@ -95,7 +96,9 @@ export const Sidebar: React.FC = () => {
   const handleConfirmCreateFolder = async (name: string, color: string) => {
     try{
       await folderService.createFolder({ name, color });
-      // Rafraîchir la liste des dossiers après création réussie
+      // Recharger les dossiers depuis l'API pour mettre à jour le store
+      await loadFolders();
+      // Rafraîchir aussi la liste pour s'assurer que tout est à jour
       setFolderListRefreshKey((prev) => prev + 1);
     }
     catch (err: unknown){

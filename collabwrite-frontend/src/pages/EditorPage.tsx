@@ -32,12 +32,17 @@ export const EditorPage: React.FC = () => {
       const file = files.find((f) => f.id === pageId);
 
       if (file) {
+        // Si c'est un fichier image ou PDF, rediriger vers le viewer
+        if (file.fileType === 'png' || file.fileType === 'pdf') {
+          navigate(`/viewer/${file.id}`);
+          return;
+        }
         setCurrentFile(file);
         setFileName(file.name);
         setFileContent(file.content);
       }
     }
-  }, [pageId, files, setCurrentFile]);
+  }, [pageId, files, setCurrentFile, navigate]);
 
   const handleContentChange = (content: string) => {
     setFileContent(content);
