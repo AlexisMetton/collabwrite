@@ -236,13 +236,14 @@ export const useDocumentStore = create<DocumentStore>()(
       },
 
       // Actions pour les dossiers
-      createFolder: async (name: string, color?: string) => {
+      createFolder: async (name: string, color?: string, folderId?: string) => {
         const newFolder: Folder = {
           id: `folder-${Date.now()}`,
           name,
           createdAt: new Date(),
           updatedAt: new Date(),
           color: color || '#3b82f6',
+          folderId: folderId || null
         };
 
         set((state) => ({
@@ -334,6 +335,7 @@ export const useDocumentStore = create<DocumentStore>()(
       loadFolders: async () => {
         try {
           const foldersData = await folderService.getFolders();
+          console.log(foldersData);
           const mapped: Folder[] = foldersData.map((f: any) => ({
             id: f.id,
             name: f.name,

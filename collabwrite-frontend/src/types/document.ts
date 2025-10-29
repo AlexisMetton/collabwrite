@@ -11,6 +11,7 @@ export interface Folder {
   createdAt: Date;
   updatedAt: Date;
   color?: string; // Couleur optionnelle pour le dossier
+  folderId?: string | null;
 }
 
 export interface File {

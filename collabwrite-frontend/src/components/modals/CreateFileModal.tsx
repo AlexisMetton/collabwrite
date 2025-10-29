@@ -39,6 +39,7 @@ export const CreateFileModal: React.FC<CreateFileModalProps> = ({
   isOpen,
   onClose,
   onConfirm,
+  folderId,
 }) => {
   const [step, setStep] = useState<"type" | "details">("type");
   const [selectedType, setSelectedType] = useState<FileType | null>(null);
@@ -61,9 +62,9 @@ export const CreateFileModal: React.FC<CreateFileModalProps> = ({
     setIsCreateFolderOpen(false);
   }
 
-  const handleConfirmCreateFolder = async (name: string, color: string) => {
+  const handleConfirmCreateFolder = async (name: string, color: string, folderId: string | null) => {
     try {
-      await folderService.createFolder({ name, color });
+      await folderService.createFolder({ name, color, folderId });
     }
     catch (err: unknown){
       const error = err as { response?: { data?: { error?: string } } }
@@ -123,6 +124,7 @@ export const CreateFileModal: React.FC<CreateFileModalProps> = ({
           "image/webp",
         ],
         pdf: ["application/pdf"],
+        folder: [],
       };
 
       if (selectedType && selectedType !== "txt") {
@@ -403,6 +405,7 @@ export const CreateFileModal: React.FC<CreateFileModalProps> = ({
         isOpen={isCreateFolderOpen}
         onClose={handleCloseModal}
         onConfirm={handleConfirmCreateFolder}
+        folderId={folderId}
       />
     </>
   );

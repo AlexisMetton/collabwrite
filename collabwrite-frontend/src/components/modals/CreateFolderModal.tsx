@@ -20,7 +20,8 @@ import { FolderPlus, Folder } from 'lucide-react';
 interface CreateFolderModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (name: string, color: string) => void;
+  onConfirm: (name: string, color: string, folderId: string | null) => void;
+  folderId?: string | null;
 }
 
 const FOLDER_COLORS = [
@@ -38,6 +39,7 @@ export const CreateFolderModal: React.FC<CreateFolderModalProps> = ({
   isOpen,
   onClose,
   onConfirm,
+  folderId
 }) => {
   const [folderName, setFolderName] = useState('');
   const [selectedColor, setSelectedColor] = useState(FOLDER_COLORS[0].value);
@@ -45,7 +47,10 @@ export const CreateFolderModal: React.FC<CreateFolderModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (folderName.trim()) {
-      onConfirm(folderName.trim(), selectedColor);
+      if(!folderId){
+        folderId = null;
+      }
+      onConfirm(folderName.trim(), selectedColor, folderId);
       setFolderName('');
       setSelectedColor(FOLDER_COLORS[0].value);
       onClose();

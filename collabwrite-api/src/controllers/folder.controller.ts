@@ -26,7 +26,7 @@ export const folderController = {
         try{
             const userId = req.userId;
 
-            const { name, color } = req.body;
+            const { name, color, folderId } = req.body;
 
             if(!userId){
                 return res.status(401).json({ error: 'Non authentifié' });
@@ -37,7 +37,7 @@ export const folderController = {
                 return res.status(400).json({ error: 'Le dossier existe déjà' });
             }
 
-            const folder = await folderService.createFolder(userId, name, color);
+            const folder = await folderService.createFolder(userId, name, color, folderId);
 
             res.status(201).json({
                 id: folder.id,

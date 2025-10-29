@@ -3,6 +3,7 @@ export interface FolderDTO {
   body: {
     name: string;
     color: string;
+    folderId: string | null;
   }
 }
 
