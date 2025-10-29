@@ -56,8 +56,6 @@ export const FolderItem: React.FC<FolderItemProps> = ({
   const sortOrder = useDocumentStore((state) => state.sortOrder);
   const navigate = useNavigate();
   const [isExpanded, setIsExpanded] = useState(false);
-  const [showRenameModal, setShowRenameModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [showRenameFileModal, setShowRenameFileModal] = useState(false);
   const [showDeleteFileModal, setShowDeleteFileModal] = useState(false);
@@ -65,6 +63,9 @@ export const FolderItem: React.FC<FolderItemProps> = ({
   const [isDragOver, setIsDragOver] = useState(false);
   const [selectedFileForMove, setSelectedFileForMove] = useState<File | null>(null);
   const [showMoveFileModal, setShowMoveFileModal] = useState(false);
+  const [renameFolder, setRenameFolder] = useState<FolderType | null>(null);
+  const [deleteFolder2, setDeleteFolder2] = useState<FolderType | null>(null);
+
 
   // Récupérer le dossier mis à jour depuis le store au lieu d'utiliser uniquement la prop
   // Utiliser useMemo pour éviter les recalculs inutiles
@@ -178,8 +179,8 @@ export const FolderItem: React.FC<FolderItemProps> = ({
     }
   };
 
-  const handleOpenRenameModal = () => {
-    setShowRenameModal(true);
+  const handleOpenRenameModal = (folder: FolderType) => {
+    setRenameFolder(folder);
   };
 
   const handleConfirmRename = async (oldname: string, newname: string) => {
@@ -192,7 +193,7 @@ export const FolderItem: React.FC<FolderItemProps> = ({
       // Puis mettre à jour depuis l'API
       await folderService.updateFolder({ oldname, newname });
       await loadFolders();
-      setShowRenameModal(false);
+      setRenameFolder(null);
     }
     catch (err: unknown){
       // En cas d'erreur, recharger pour restaurer l'état correct
@@ -201,8 +202,8 @@ export const FolderItem: React.FC<FolderItemProps> = ({
     }
   };
 
-  const handleOpenDeleteModal = () => {
-    setShowDeleteModal(true);
+  const handleOpenDeleteModal = (folder: FolderType) => {
+    setDeleteFolder2(folder);
   };
 
   const handleConfirmDelete =  async (name: string) => {
@@ -216,7 +217,7 @@ export const FolderItem: React.FC<FolderItemProps> = ({
       await folderService.deleteFolder({ name });
       // Recharger depuis l'API pour s'assurer que tout est synchronisé
       await loadFolders();
-      setShowDeleteModal(false);
+      setDeleteFolder2(null);
     }
     catch (err: unknown){
       // En cas d'erreur, recharger pour restaurer l'état correct
@@ -303,79 +304,95 @@ export const FolderItem: React.FC<FolderItemProps> = ({
 
   const folderCard = (folder: FolderType) => {
     return (
-      <Card
-        className={`p-3 hover:shadow-md transition-shadow ${
-          isDragOver ? "ring-2 ring-primary bg-primary/10" : ""
-        }`}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-        key={folder.id}
-      >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 min-w-0 flex-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleToggleExpanded}
-              className="h-6 w-6 p-0"
-            >
-              {isExpanded ? (
-                <ChevronDown className="h-4 w-4" />
-              ) : (
-                <ChevronRight className="h-4 w-4" />
-              )}
-            </Button>
-
-            <div
-              className="flex items-center gap-2 min-w-0 flex-1 cursor-pointer"
-              onClick={handleToggleExpanded}
-            >
-              <Folder
-                className="h-4 w-4 flex-shrink-0"
-                style={{ color: folder.color || "#3b82f6" }}
-              />
-              <span className="font-medium text-sm text-foreground truncate">
-                {folder.name}
-              </span>
-              <Badge variant="secondary" className="text-xs">
-                {folderFiles.length}
-              </Badge>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleCreateFile}
-              className="h-6 w-6 p-0"
-              title="Nouveau fichier"
-            >
-              <Plus className="h-3 w-3" />
-            </Button>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                  <MoreHorizontal className="h-3 w-3" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={handleOpenRenameModal}>
-                  Renommer
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={handleOpenDeleteModal}
-                  className="text-destructive"
+      <div key={folder.id}>
+          <Card
+            className={`p-3 hover:shadow-md transition-shadow ${
+              isDragOver ? "ring-2 ring-primary bg-primary/10" : ""
+            }`}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleToggleExpanded}
+                  className="h-6 w-6 p-0"
                 >
-                  Supprimer
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-      </Card>
+                  {isExpanded ? (
+                    <ChevronDown className="h-4 w-4" />
+                  ) : (
+                    <ChevronRight className="h-4 w-4" />
+                  )}
+                </Button>
+
+                <div
+                  className="flex items-center gap-2 min-w-0 flex-1 cursor-pointer"
+                  onClick={handleToggleExpanded}
+                >
+                  <Folder
+                    className="h-4 w-4 flex-shrink-0"
+                    style={{ color: folder.color || "#3b82f6" }}
+                  />
+                  <span className="font-medium text-sm text-foreground truncate">
+                    {folder.name}
+                  </span>
+                  <Badge variant="secondary" className="text-xs">
+                    {folderFiles.length}
+                  </Badge>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCreateFile}
+                  className="h-6 w-6 p-0"
+                  title="Nouveau fichier"
+                >
+                  <Plus className="h-3 w-3" />
+                </Button>
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                      <MoreHorizontal className="h-3 w-3" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => handleOpenRenameModal(folder)}>
+                      Renommer
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => handleOpenDeleteModal(folder)}
+                      className="text-destructive"
+                    >
+                      Supprimer
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
+          </Card>
+
+          {/* Modales pour le dossier */}
+          <RenameFolderModal
+            isOpen={!!renameFolder}
+            onClose={() => setRenameFolder(null)}
+            onConfirm={handleConfirmRename}
+            currentName={renameFolder?.name || ""}
+          />
+
+          <DeleteFolderModal
+            isOpen={!!deleteFolder2}
+            onClose={() => setDeleteFolder2(null)}
+            onConfirm={handleConfirmDelete}
+            folder={deleteFolder2}
+          />
+      </div>
     )
   }
 
@@ -493,21 +510,6 @@ export const FolderItem: React.FC<FolderItemProps> = ({
           )}
         </div>
       )}
-
-      {/* Modales pour le dossier */}
-      <RenameFolderModal
-        isOpen={showRenameModal}
-        onClose={() => setShowRenameModal(false)}
-        onConfirm={handleConfirmRename}
-        currentName={folderFromStore.name}
-      />
-
-      <DeleteFolderModal
-        isOpen={showDeleteModal}
-        onClose={() => setShowDeleteModal(false)}
-        onConfirm={handleConfirmDelete}
-        folder={folder}
-      />
 
       {/* Modale de création de fichier */}
       <CreateFileModal
