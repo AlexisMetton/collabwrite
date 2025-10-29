@@ -1,4 +1,4 @@
-import { Editor } from "@/components/editor/Editor";
+import { EditorWithChat } from "@/components/editor/EditorWithChat";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -177,13 +177,13 @@ export const DocumentEditorPage: React.FC = () => {
 
       {/* Éditeur de contenu */}
       <div className="flex-1 min-h-0">
-        <Editor
+        <EditorWithChat
           key={currentFile.id}
+          documentId={currentFile.id}
           content={documentContent}
           onContentChange={handleContentChange}
           onSave={handleSave}
           placeholder="Commencez à écrire votre contenu..."
-          className="h-full"
         />
       </div>
     </div>
