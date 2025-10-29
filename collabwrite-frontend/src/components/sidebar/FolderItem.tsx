@@ -301,9 +301,8 @@ export const FolderItem: React.FC<FolderItemProps> = ({
     e.dataTransfer.setData("fileId", file.id);
   };
 
-  return (
-    <div className="space-y-1">
-      {/* En-tête du dossier */}
+  const folderCard = (folder: FolderType) => {
+    return (
       <Card
         className={`p-3 hover:shadow-md transition-shadow ${
           isDragOver ? "ring-2 ring-primary bg-primary/10" : ""
@@ -311,6 +310,7 @@ export const FolderItem: React.FC<FolderItemProps> = ({
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
+        key={folder.id}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -333,10 +333,10 @@ export const FolderItem: React.FC<FolderItemProps> = ({
             >
               <Folder
                 className="h-4 w-4 flex-shrink-0"
-                style={{ color: folderFromStore.color || "#3b82f6" }}
+                style={{ color: folder.color || "#3b82f6" }}
               />
               <span className="font-medium text-sm text-foreground truncate">
-                {folderFromStore.name}
+                {folder.name}
               </span>
               <Badge variant="secondary" className="text-xs">
                 {folderFiles.length}
@@ -376,7 +376,13 @@ export const FolderItem: React.FC<FolderItemProps> = ({
           </div>
         </div>
       </Card>
+    )
+  }
 
+  return (
+    <div className="space-y-1">
+      {/* En-tête du dossier */}
+      {folderCard(folder)}
       {/* Fichiers du dossier */}
       {isExpanded && (
         <div className="ml-6 space-y-1">
@@ -476,9 +482,7 @@ export const FolderItem: React.FC<FolderItemProps> = ({
           {
             folder.subFolders.map((subfolder) => {
               return(
-                <div className="p-2text-xs text-muted-foreground text-center" key={subfolder.id}>
-                  <span>{subfolder.id}</span>
-                </div>
+                folderCard(subfolder)
               )
             })
           }
