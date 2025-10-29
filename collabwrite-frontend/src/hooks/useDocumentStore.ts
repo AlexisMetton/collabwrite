@@ -334,14 +334,15 @@ export const useDocumentStore = create<DocumentStore>()(
 
       loadFolders: async () => {
         try {
-          const foldersData = await folderService.getFolders();
-          console.log(foldersData);
+          let foldersData = await folderService.getFolders();
+          foldersData = getSubfolders(foldersData);
           const mapped: Folder[] = foldersData.map((f: any) => ({
             id: f.id,
             name: f.name,
             createdAt: new Date(f.created_at),
             updatedAt: new Date(f.updated_at),
             color: f.color || '#3b82f6',
+            subFolders: f.subFolders
           }));
           // Forcer une nouvelle référence pour garantir le re-render
           set({ folders: [...mapped] });
@@ -445,6 +446,22 @@ export const useFilteredFiles = () => {
 
   return filtered;
 };
+
+const getSubfolders = (folders: Folder[]) => {
+  const toRemove: string[] = [];
+  for(const folder of folders){
+    folder.subFolders = [];
+    if(folder.parent_id){
+      const parentFolder = folders.find((f) => f.id == folder.parent_id);
+      if(parentFolder){
+        parentFolder.subFolders.push(folder);
+        toRemove.push(folder.id);
+      }
+    }
+  }
+
+  return folders.filter((f) => !toRemove.includes(f.id));
+}
 
 // Récupérer les fichiers d'un dossier spécifique
 export const useFilesByFolder = (folderId: string | null) => {

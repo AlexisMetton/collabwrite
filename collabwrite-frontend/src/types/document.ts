@@ -12,6 +12,8 @@ export interface Folder {
   updatedAt: Date;
   color?: string; // Couleur optionnelle pour le dossier
   folderId?: string | null;
+  parent_id?: string | null;
+  subFolders: Folder[];
 }
 
 export interface File {

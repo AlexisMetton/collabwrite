@@ -473,7 +473,15 @@ export const FolderItem: React.FC<FolderItemProps> = ({
               </div>
             </Card>
           ))}
-
+          {
+            folder.subFolders.map((subfolder) => {
+              return(
+                <div className="p-2text-xs text-muted-foreground text-center" key={subfolder.id}>
+                  <span>{subfolder.id}</span>
+                </div>
+              )
+            })
+          }
           {folderFiles.length === 0 && (
             <div className="p-2 text-xs text-muted-foreground text-center">
               Aucun fichier dans ce dossier
