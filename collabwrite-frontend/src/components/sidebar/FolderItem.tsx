@@ -389,6 +389,7 @@ export const FolderItem: React.FC<FolderItemProps> = ({
           {/* Modale de création de fichier */}
           <CreateFileModal
             isOpen={!!folderForCreateFile}
+            onClose={() => setFolderForCreateFile(null)}
             onConfirm={handleConfirmCreateFile}
             folderId={folderForCreateFile?.id || ""}
           />

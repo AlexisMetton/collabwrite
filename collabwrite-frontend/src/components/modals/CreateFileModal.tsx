@@ -18,6 +18,7 @@ import CreateFolderModal from "./CreateFolderModal";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { FileType } from "@/types/document";
+import { useDocumentStore } from "@/hooks/useDocumentStore";
 import {
   FileText,
   FileType as FileTypeIcon,
@@ -49,6 +50,8 @@ export const CreateFileModal: React.FC<CreateFileModalProps> = ({
   const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
   const [error, setError] = useState("");
 
+  const { loadFolders } = useDocumentStore();
+
   const handleTypeSelect = (type: FileType) => {
     setSelectedType(type);
     if(type == "folder"){
@@ -65,6 +68,7 @@ export const CreateFileModal: React.FC<CreateFileModalProps> = ({
   const handleConfirmCreateFolder = async (name: string, color: string, folderId: string | null) => {
     try {
       await folderService.createFolder({ name, color, folderId });
+      await loadFolders();
     }
     catch (err: unknown){
       const error = err as { response?: { data?: { error?: string } } }
