@@ -503,9 +503,9 @@ export const FolderItem: React.FC<FolderItemProps> = ({
               )
             })
           }
-          {folderFiles.length === 0 && (
+          {(folderFiles.length === 0 && folder.subFolders.length === 0) && (
             <div className="p-2 text-xs text-muted-foreground text-center">
-              Aucun fichier dans ce dossier
+              Aucun fichier ou dossier dans ce dossier
             </div>
           )}
         </div>
