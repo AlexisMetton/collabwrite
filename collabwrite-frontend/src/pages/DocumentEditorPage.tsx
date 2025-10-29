@@ -8,10 +8,16 @@ import { useDocumentStore } from "@/hooks/useDocumentStore";
 import { ArrowLeft, FileText, Save, Trash2 } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useWebRTC } from "@/hooks/useWebRTC";
+import { AudioCallButton } from "@/components/audio/AudioCallButton";
+import { AudioControls } from "@/components/audio/AudioControls";
+import { AudioStreams } from "@/components/audio/AudioStreams";
+import { useAuth } from "@/contexts/AuthContext";
 
 export const DocumentEditorPage: React.FC = () => {
   const { documentId } = useParams<{ documentId: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const {
     files,
     currentFile,
@@ -25,6 +31,22 @@ export const DocumentEditorPage: React.FC = () => {
   const [documentTitle, setDocumentTitle] = useState("");
   const [documentContent, setDocumentContent] = useState("");
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const {
+    localStream,
+    peers,
+    isCallActive,
+    isMuted,
+    connectionStatus,
+    error: audioError,
+    startCall,
+    endCall,
+    toggleMute,
+  } = useWebRTC({
+    roomId: `document-${documentId}`,
+    userId: user?.id || 'anonymous',
+    userName: user?.fullName || 'Utilisateur anonyme',
+  });
 
   // Charger le document au montage du composant
   useEffect(() => {
@@ -94,6 +116,14 @@ export const DocumentEditorPage: React.FC = () => {
     };
   }, []);
 
+  useEffect(() => {
+    return () => {
+      if (isCallActive) {
+        endCall();
+      }
+    };
+  }, [isCallActive, endCall]);
+
   const handleBack = () => {
     navigate("/dashboard");
   };
@@ -141,7 +171,7 @@ export const DocumentEditorPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
           {currentFile.isDirty && (
             <span className="text-sm text-orange-500">• Non sauvegardé</span>
           )}
@@ -158,8 +188,42 @@ export const DocumentEditorPage: React.FC = () => {
             <Save className="h-4 w-4" />
             {isSaving ? "Sauvegarde..." : "Sauvegarder"}
           </Button>
+
+          <div className="flex items-center gap-2 border-l pl-4">
+            {!isCallActive ? (
+              <AudioCallButton
+                onStartCall={startCall}
+                connectionStatus={connectionStatus}
+              />
+            ) : (
+              <AudioControls
+                isMuted={isMuted}
+                participants={Array.from(peers.entries()).map(([id, peer]) => ({
+                  id,
+                  hasStream: !!peer.stream,
+                  userName: peer.userName,
+                }))}
+                onToggleMute={toggleMute}
+                onEndCall={endCall}
+              />
+            )}
+          </div>
         </div>
       </div>
+
+      {audioError && (
+        <Card className="p-4 border-red-200 bg-red-50">
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0 w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center text-sm">
+              !
+            </div>
+            <div>
+              <p className="font-medium text-red-900">Erreur audio</p>
+              <p className="text-sm text-red-700">{audioError}</p>
+            </div>
+          </div>
+        </Card>
+      )}
 
       {/* Métadonnées du document */}
       <Card className="p-4">
@@ -186,6 +250,8 @@ export const DocumentEditorPage: React.FC = () => {
           placeholder="Commencez à écrire votre contenu..."
         />
       </div>
+
+      <AudioStreams localStream={localStream} peers={peers} />
     </div>
   );
 };
