@@ -10,7 +10,7 @@ import { useDocumentStore } from "@/hooks/useDocumentStore";
 import type { File, FileType } from "@/types/document";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Calendar, Edit, FileText, FileType as FileTypeIcon, Folder as FolderIcon, Image as ImageIcon, Move, Plus, Trash2, User } from "lucide-react";
+import { Calendar, Edit, FileText, FileType as FileTypeIcon, Folder as FolderIcon, Image as ImageIcon, Move, Plus, Trash2, User, ChevronRight, ChevronDown } from "lucide-react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -28,6 +28,7 @@ export const DashboardPage: React.FC = () => {
     isOpen: boolean;
     file?: File;
   }>({ isOpen: false });
+  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
 
   // Charger les dossiers au montage du composant
   React.useEffect(() => {
@@ -102,6 +103,28 @@ export const DashboardPage: React.FC = () => {
     setMoveFileModal({ isOpen: true, file });
   };
 
+  const toggleFolder = (folderId: string) => {
+    setExpandedFolders((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(folderId)) {
+        newSet.delete(folderId);
+      } else {
+        newSet.add(folderId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleFolderFileClick = (file: File) => {
+    if (file.fileType === "txt") {
+      setCurrentFile(file);
+      navigate(`/editor/${file.id}`);
+    } else {
+      setCurrentFile(file);
+      navigate(`/viewer/${file.id}`);
+    }
+  };
+
   const recentFiles = files
     .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
     .slice(0, 5);
@@ -109,10 +132,6 @@ export const DashboardPage: React.FC = () => {
   const recentFolders = folders
     .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
     .slice(0, 5);
-
-  const getFolderFileCount = (folderId: string) => {
-    return files.filter(f => f.folderId === folderId).length;
-  };
 
   if (isLoading) {
     return (
@@ -163,33 +182,104 @@ export const DashboardPage: React.FC = () => {
             </h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
-            {recentFolders.map((folder) => (
-              <Card
-                key={folder.id}
-                className="p-3 sm:p-4 hover:shadow-md transition-shadow cursor-pointer"
-                onClick={() => navigate("/dashboard")}
-                style={{height: 'fit-content !important'}}
-              >
-                <div className="space-y-2 sm:space-y-3">
-                  <div className="flex items-center gap-2">
-                    <FolderIcon
-                      className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0"
-                      style={{ color: folder.color || "#3b82f6" }}
-                    />
-                    <h3 className="font-medium text-xs sm:text-sm text-foreground truncate flex-1">
-                      {folder.name}
-                    </h3>
-                    <Badge variant="secondary" className="text-xs">
-                      {getFolderFileCount(folder.id)}
-                    </Badge>
+            {recentFolders.map((folder) => {
+              const folderFiles = files.filter((f) => f.folderId === folder.id);
+              const isExpanded = expandedFolders.has(folder.id);
+
+              return (
+                <Card
+                  key={folder.id}
+                  className="p-3 sm:p-4 hover:shadow-md transition-shadow"
+                  style={{height: 'fit-content !important'}}
+                >
+                  <div className="space-y-2 sm:space-y-3">
+                    {/* En-tête du dossier */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toggleFolder(folder.id)}
+                          className="h-5 w-5 p-0 flex-shrink-0"
+                        >
+                          {isExpanded ? (
+                            <ChevronDown className="h-4 w-4" />
+                          ) : (
+                            <ChevronRight className="h-4 w-4" />
+                          )}
+                        </Button>
+                        <div
+                          className="flex items-center gap-2 min-w-0 flex-1 cursor-pointer"
+                          onClick={() => toggleFolder(folder.id)}
+                        >
+                          <FolderIcon
+                            className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0"
+                            style={{ color: folder.color || "#3b82f6" }}
+                          />
+                          <h3 className="font-medium text-xs sm:text-sm text-foreground truncate">
+                            {folder.name}
+                          </h3>
+                          <Badge variant="secondary" className="text-xs flex-shrink-0">
+                            {folderFiles.length}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Date de modification */}
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground pl-7">
+                      <Calendar className="h-3 w-3 flex-shrink-0" />
+                      <span className="truncate">{formatDate(folder.updatedAt)}</span>
+                    </div>
+
+                    {/* Fichiers du dossier */}
+                    {isExpanded && (
+                      <div className="pl-7 space-y-2 border-t pt-2">
+                        {folderFiles.length === 0 ? (
+                          <div className="text-center py-2 text-xs text-muted-foreground">
+                            Aucun fichier dans ce dossier
+                          </div>
+                        ) : (
+                          folderFiles.map((file) => (
+                            <Card
+                              key={file.id}
+                              className="p-2 hover:shadow-md transition-shadow cursor-pointer"
+                              onClick={() => handleFolderFileClick(file)}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2 flex-1 min-w-0">
+                                  {getFileIcon(file.fileType)}
+                                  <span className="font-medium text-xs text-foreground truncate">
+                                    {file.name}
+                                  </span>
+                                  {file.isDirty && (
+                                    <div className="w-2 h-2 bg-orange-500 rounded-full flex-shrink-0" />
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleMoveFile(file);
+                                    }}
+                                    className="h-5 w-5 p-0"
+                                    title="Déplacer"
+                                  >
+                                    <Move className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              </div>
+                            </Card>
+                          ))
+                        )}
+                      </div>
+                    )}
                   </div>
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Calendar className="h-3 w-3 flex-shrink-0" />
-                    <span className="truncate">{formatDate(folder.updatedAt)}</span>
-                  </div>
-                </div>
-              </Card>
-            ))}
+                </Card>
+              );
+            })}
           </div>
         </div>
       )}
@@ -287,15 +377,15 @@ export const DashboardPage: React.FC = () => {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-2 pt-2 border-t">
+                  <div className="flex items-center gap-2 pt-2 border-t justify-end">
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => handleEditFile(file)}
-                      className="flex-1 text-xs sm:text-sm"
+                      className="px-2 sm:px-3"
+                      title="Ouvrir"
                     >
-                      <Edit className="h-3 w-3 sm:mr-1" />
-                      <span className="hidden sm:inline">Ouvrir</span>
+                      <Edit className="h-3 w-3" />
                     </Button>
                     <Button
                       variant="ghost"
@@ -304,7 +394,7 @@ export const DashboardPage: React.FC = () => {
                         e.stopPropagation();
                         handleMoveFile(file);
                       }}
-                      className="md:hidden px-2 text-xs"
+                      className="px-2 sm:px-3"
                       title="Déplacer vers un dossier"
                     >
                       <Move className="h-3 w-3" />
@@ -315,6 +405,7 @@ export const DashboardPage: React.FC = () => {
                       onClick={() => handleDeleteFile(file)}
                       className="text-destructive hover:text-destructive px-2 sm:px-3"
                       aria-label="Supprimer"
+                      title="Supprimer"
                     >
                       <Trash2 className="h-3 w-3" />
                     </Button>

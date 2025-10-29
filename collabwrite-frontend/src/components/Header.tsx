@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom"
-import { LogIn, UserPlus, Menu, User } from "lucide-react"
+import { LogIn, UserPlus, Menu, User, FileText, Folder, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
 import { useAuth } from "@/contexts/AuthContext"
@@ -22,9 +22,21 @@ export function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-4">
-
+            {user && (
+              <>
+                <Link to="/my-documents" className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1">
+                  <FileText className="h-4 w-4" />
+                  Mes documents
+                </Link>
+                <Link to="/my-folders" className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1">
+                  <Folder className="h-4 w-4" />
+                  Mes dossiers
+                </Link>
+              </>
+            )}
             {user && user.role === 'admin' && (
-              <Link to="/admin" className="text-sm font-medium hover:text-primary transition-colors">
+              <Link to="/admin" className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1">
+                <Users className="h-4 w-4" />
                 Gestion des utilisateurs
               </Link>
             )}
@@ -76,9 +88,26 @@ export function Header() {
               Accueil
             </Link>*/}
             <div className="flex flex-col gap-2 px-4">
+                {user && (
+                  <>
+                    <Link to="/my-documents" onClick={() => setIsMenuOpen(false)}>
+                      <Button variant="ghost" size="sm" className="w-full gap-2 justify-start">
+                        <FileText className="h-4 w-4" />
+                        Mes documents
+                      </Button>
+                    </Link>
+                    <Link to="/my-folders" onClick={() => setIsMenuOpen(false)}>
+                      <Button variant="ghost" size="sm" className="w-full gap-2 justify-start">
+                        <Folder className="h-4 w-4" />
+                        Mes dossiers
+                      </Button>
+                    </Link>
+                  </>
+                )}
                 {user && user.role === 'admin' && (
                   <Link to="/admin" onClick={() => setIsMenuOpen(false)}>
-                    <Button variant="ghost" size="sm" className="w-full gap-2">
+                    <Button variant="ghost" size="sm" className="w-full gap-2 justify-start">
+                      <Users className="h-4 w-4" />
                       Gestion des utilisateurs
                     </Button>
                   </Link>

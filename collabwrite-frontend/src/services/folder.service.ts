@@ -3,6 +3,7 @@ import api from './api';
 export interface FolderData {
     name: string;
     color?: string;
+    folderId?: string | null;
 }
 
 export interface FolderUpdateData {

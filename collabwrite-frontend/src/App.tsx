@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
+import { Toaster } from "sonner";
 
 // Layouts & Components
 import { Header } from "./components/Header";
@@ -19,6 +20,8 @@ import { AdminDashboard } from "./pages/AdminDashboard";
 import DocumentEditorPage from "./pages/DocumentEditorPage";
 import EditorPage from "./pages/EditorPage";
 import FileViewerPage from "./pages/FileViewerPage";
+import { MyDocumentsPage } from "./pages/MyDocumentsPage";
+import { MyFoldersPage } from "./pages/MyFoldersPage";
 
 // Layout pour les pages sans header/footer (login, register)
 function AuthLayout({ children }: { children: React.ReactNode }) {
@@ -40,8 +43,9 @@ function App() {
   return (
     <AuthProvider>
       <Router>
+        <Toaster position="top-right" richColors />
         <Routes>
-         
+
           <Route
             path="/"
             element={
@@ -53,7 +57,7 @@ function App() {
             }
           />
 
-          
+
           <Route
             path="/login"
             element={
@@ -75,13 +79,33 @@ function App() {
             }
           />
 
-         
+
           <Route
             path="/dashboard"
             element={
               <ProtectedRoute>
                 <DashboardLayout>
                   <DashboardPage />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-documents"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <MyDocumentsPage />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-folders"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <MyFoldersPage />
                 </DashboardLayout>
               </ProtectedRoute>
             }
@@ -125,7 +149,7 @@ function App() {
                 </DashboardLayout>
               </ProtectedRoute>
             }
-          />        
+          />
           <Route
             path="/admin"
             element={
