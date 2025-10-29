@@ -93,9 +93,9 @@ export const Sidebar: React.FC = () => {
     setShowCreateFolderModal(true);
   };
 
-  const handleConfirmCreateFolder = async (name: string, color: string) => {
+  const handleConfirmCreateFolder = async (name: string, color: string, folderId: string | null) => {
     try{
-      await folderService.createFolder({ name, color });
+      await folderService.createFolder({ name, color, folderId });
       // Recharger les dossiers depuis l'API pour mettre à jour le store
       await loadFolders();
       // Rafraîchir aussi la liste pour s'assurer que tout est à jour

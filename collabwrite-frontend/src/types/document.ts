@@ -3,7 +3,7 @@
  * Projet Spé 4 - Structure hiérarchique unifiée
  */
 
-export type FileType = "txt" | "png" | "pdf";
+export type FileType = "txt" | "png" | "pdf" | "folder";
 
 export interface Folder {
   id: string;
@@ -11,6 +11,9 @@ export interface Folder {
   createdAt: Date;
   updatedAt: Date;
   color?: string; // Couleur optionnelle pour le dossier
+  folderId?: string | null;
+  parent_id?: string | null;
+  subFolders: Folder[];
 }
 
 export interface File {
