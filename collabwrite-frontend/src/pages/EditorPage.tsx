@@ -24,6 +24,7 @@ export const EditorPage: React.FC = () => {
   const [fileName, setFileName] = useState("");
   const [fileContent, setFileContent] = useState("");
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const autosaveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Trouver le fichier actuel
   useEffect(() => {
@@ -51,6 +52,22 @@ export const EditorPage: React.FC = () => {
         updateFile(currentFile.id, { content });
       }
     }, 500);
+
+    // Autosave débouncé (2000ms) pour les fichiers texte
+    if (autosaveTimerRef.current) {
+      clearTimeout(autosaveTimerRef.current);
+    }
+    if (currentFile?.fileType === "txt") {
+      autosaveTimerRef.current = setTimeout(async () => {
+        if (!currentFile) return;
+        const updatedFile = {
+          ...currentFile,
+          name: fileName,
+          content: content,
+        };
+        await saveFile(updatedFile);
+      }, 2000);
+    }
   };
 
   const handleNameChange = (name: string) => {
@@ -89,6 +106,9 @@ export const EditorPage: React.FC = () => {
     return () => {
       if (debounceTimerRef.current) {
         clearTimeout(debounceTimerRef.current);
+      }
+      if (autosaveTimerRef.current) {
+        clearTimeout(autosaveTimerRef.current);
       }
     };
   }, []);
