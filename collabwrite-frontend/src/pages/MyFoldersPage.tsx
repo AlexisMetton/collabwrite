@@ -167,6 +167,66 @@ export const MyFoldersPage: React.FC = () => {
     return formatDistanceToNow(date, { addSuffix: true, locale: fr });
   };
 
+  const organiseFilesInFolder = (folders: Folder[], files: File[]) => {
+    const organiseFiles = [];
+    for(const folder of folders){
+      let listFiles = files.filter((f) => f.folderId == folder.id)
+      organiseFiles.push({
+        folderId: folder.id,
+        listFiles: listFiles
+      });
+
+      if(!folder.subFolders) continue;
+
+      for(const subFolder of folder.subFolders){
+        listFiles = files.filter((f) => f.folderId == subFolder.id)
+        organiseFiles.push({
+          folderId: subFolder.id,
+          listFiles: listFiles
+        });
+      }
+    }
+
+    return organiseFiles;
+  }
+
+  const organiseFiles = organiseFilesInFolder(folders, files);
+
+  const fileCard = (file: File) => {
+    return(
+      <Card
+        key={file.id}
+        className="p-2 hover:shadow-md transition-shadow cursor-pointer"
+        onClick={() => handleFileClick(file)}
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <span className="font-medium text-xs text-foreground truncate">
+              {file.name}
+            </span>
+            {file.isDirty && (
+              <div className="w-2 h-2 bg-orange-500 rounded-full flex-shrink-0" />
+            )}
+          </div>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleMoveFile(file);
+              }}
+              className="h-5 w-5 p-0"
+              title="Déplacer"
+            >
+              <FolderOpen className="h-3 w-3" />
+            </Button>
+          </div>
+        </div>
+      </Card>
+    )
+  }
+
   if (isLoading) {
     return (
       <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
@@ -196,7 +256,7 @@ export const MyFoldersPage: React.FC = () => {
       ) : (
         <div className="space-y-3 sm:space-y-4">
           {folders.map((folder) => {
-            const folderFiles = files.filter((f) => f.folderId === folder.id);
+            const folderFiles = organiseFiles.find((f) => f.folderId === folder.id)?.listFiles;
             const subFolders = folder.subFolders;
             const isExpanded = expandedFolders.has(folder.id);
 
@@ -231,7 +291,7 @@ export const MyFoldersPage: React.FC = () => {
                           {folder.name}
                         </span>
                         <Badge variant="secondary" className="text-xs">
-                          {folderFiles.length}
+                          {folderFiles?.length}
                         </Badge>
                       </div>
                     </div>
@@ -277,82 +337,63 @@ export const MyFoldersPage: React.FC = () => {
                   {/* Fichiers du dossier */}
                   {isExpanded && (
                     <div className="pl-8 space-y-2 border-t pt-3">
-                      {folderFiles.length === 0 && subFolders.length === 0 ? (
+                      {folderFiles?.length === 0 && subFolders.length === 0 ? (
                         <div className="text-center py-4 text-sm text-muted-foreground">
                           Aucun fichier ou sous-dossier dans ce dossier
                         </div>
                       ) : (
                         <>
-                          {subFolders.map((subFolder) => (
-                            <Card key={subFolder.id} className="p-3 sm:p-4 hover:shadow-md transition-shadow">
-                              <div className="space-y-3">
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-2 min-w-0 flex-1">
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => toggleFolder(subFolder.id)}
-                                      className="h-6 w-6 p-0"
-                                    >
-                                      {isExpanded ? (
-                                        <ChevronRight className="h-4 w-4 rotate-90" />
-                                      ) : (
-                                        <ChevronRight className="h-4 w-4" />
-                                      )}
-                                    </Button>
+                          {subFolders.map((subFolder) => {
+                            const folderFilesSubFolder = organiseFiles.find((f) => f.folderId === subFolder.id)?.listFiles;
+                            return (
+                              <>
+                                <Card key={subFolder.id} className="p-3 sm:p-4 hover:shadow-md transition-shadow">
+                                  <div className="space-y-3">
+                                    <div className="flex items-center justify-between">
+                                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={() => toggleFolder(subFolder.id)}
+                                          className="h-6 w-6 p-0"
+                                        >
+                                          {isExpanded ? (
+                                            <ChevronRight className="h-4 w-4 rotate-90" />
+                                          ) : (
+                                            <ChevronRight className="h-4 w-4" />
+                                          )}
+                                        </Button>
 
-                                    <div
-                                      className="flex items-center gap-2 min-w-0 flex-1 cursor-pointer"
-                                      onClick={() => toggleFolder(subFolder.id)}
-                                    >
-                                      <FolderIcon
-                                        className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0"
-                                        style={{ color: subFolder.color || "#3b82f6" }}
-                                      />
-                                      <span className="font-medium text-sm sm:text-base text-foreground truncate">
-                                        {subFolder.name}
-                                      </span>
-                                      <Badge variant="secondary" className="text-xs">
-                                        {folderFiles.length}
-                                      </Badge>
-                                    </div>
+                                        <div
+                                          className="flex items-center gap-2 min-w-0 flex-1 cursor-pointer"
+                                          onClick={() => toggleFolder(subFolder.id)}
+                                        >
+                                          <FolderIcon
+                                            className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0"
+                                            style={{ color: subFolder.color || "#3b82f6" }}
+                                          />
+                                          <span className="font-medium text-sm sm:text-base text-foreground truncate">
+                                            {subFolder.name}
+                                          </span>
+                                          <Badge variant="secondary" className="text-xs">
+                                            {folderFilesSubFolder?.length}
+                                          </Badge>
+                                        </div>
+                                      </div>  
+                                    </div>  
                                   </div>  
-                                </div>  
-                              </div>  
-                            </Card>
-                          ))}
+                                </Card>
+                                {folderFilesSubFolder?.map((file) => (
+                                  <div className="pl-8">
+                                    {fileCard(file)}
+                                  </div>
+                                ))}
+                              </>
+                            )
+                          })}
 
-                          {folderFiles.map((file) => (
-                            <Card
-                              key={file.id}
-                              className="p-2 hover:shadow-md transition-shadow cursor-pointer"
-                              onClick={() => handleFileClick(file)}
-                            >
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2 flex-1 min-w-0">
-                                  <span className="font-medium text-xs text-foreground truncate">
-                                    {file.name}
-                                  </span>
-                                  {file.isDirty && (
-                                    <div className="w-2 h-2 bg-orange-500 rounded-full flex-shrink-0" />
-                                  )}
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleMoveFile(file);
-                                    }}
-                                    className="h-5 w-5 p-0"
-                                    title="Déplacer"
-                                  >
-                                    <FolderOpen className="h-3 w-3" />
-                                  </Button>
-                                </div>
-                              </div>
-                            </Card>
+                          {folderFiles?.map((file) => (
+                            fileCard(file)
                           ))}
                         </>
                       )}
