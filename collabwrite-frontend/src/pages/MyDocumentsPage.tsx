@@ -191,15 +191,15 @@ export const MyDocumentsPage: React.FC = () => {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-2 pt-2 border-t">
+                  <div className="flex items-center gap-2 pt-2 border-t justify-end">
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => handleEditFile(file)}
-                      className="flex-1 text-xs sm:text-sm"
+                      className="px-2 sm:px-3"
+                      title="Ouvrir"
                     >
-                      <Edit className="h-3 w-3 sm:mr-1" />
-                      <span className="hidden sm:inline">Ouvrir</span>
+                      <Edit className="h-3 w-3" />
                     </Button>
                     <Button
                       variant="ghost"
