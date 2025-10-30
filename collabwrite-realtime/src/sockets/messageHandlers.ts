@@ -25,8 +25,6 @@ const documentRooms = new Map<string, Set<string>>();
 
 export function setupSocketHandlers(io: SocketIOServer) {
   io.on("connection", (socket: Socket) => {
-    console.log(`Client connecté: ${socket.id}`);
-
     // Rejoindre une room (document)
     socket.on("join:document", async (data: JoinRoomData) => {
       try {
@@ -61,8 +59,6 @@ export function setupSocketHandlers(io: SocketIOServer) {
             documentRooms.set(documentId, new Set());
           }
           documentRooms.get(documentId)?.add(socket.id);
-
-          console.log(`${user.fullName} a rejoint le document ${documentId}`);
 
           // Notifier les autres utilisateurs de la room
           socket.to(`document:${documentId}`).emit("user:joined", {
@@ -129,8 +125,6 @@ export function setupSocketHandlers(io: SocketIOServer) {
 
           // Diffuser le message à tous les utilisateurs de la room
           io.to(`document:${documentId}`).emit("message:new", savedMessage);
-
-          console.log(`Message de ${userFullName} dans document ${documentId}`);
         } catch (error: any) {
           console.error(
             "Erreur API lors de l'envoi du message:",
@@ -169,6 +163,86 @@ export function setupSocketHandlers(io: SocketIOServer) {
       }
     });
 
+    // Synchronisation du contenu du document en temps réel
+    socket.on("document:update-content", (data: { documentId: string; content: string; userId: string }) => {
+      const { documentId, content, userId } = data;
+
+      if (userId && documentId) {
+        socket.to(`document:${documentId}`).emit("document:content-updated", {
+          documentId,
+          content,
+          userId,
+        });
+      }
+    });
+
+    // Synchronisation du contenu de l'éditeur en temps réel
+    socket.on("editor:change", (data: { documentId: string; content: string; version?: number }) => {
+      const { documentId, content, version } = data;
+      const userId = (socket as any).userId;
+      const userFullName = (socket as any).userFullName;
+
+      if (userId && documentId) {
+        // Diffuser les changements à tous les autres utilisateurs de la room
+        socket.to(`document:${documentId}`).emit("editor:update", {
+          content,
+          version,
+          userId,
+          userFullName,
+          timestamp: new Date().toISOString(),
+        });
+      }
+    });
+
+    // Tracking de la position du curseur
+    socket.on("cursor:move", (data: { documentId: string; position: number; selection?: { start: number; end: number } }) => {
+      const { documentId, position, selection } = data;
+      const userId = (socket as any).userId;
+      const userFullName = (socket as any).userFullName;
+      const userEmail = (socket as any).userEmail;
+
+      if (userId && documentId) {
+        // Diffuser la position du curseur aux autres utilisateurs
+        socket.to(`document:${documentId}`).emit("cursor:update", {
+          userId,
+          userFullName,
+          userEmail,
+          position,
+          selection,
+          timestamp: new Date().toISOString(),
+        });
+      }
+    });
+
+    // Demander la synchronisation initiale
+    socket.on("request:sync", (data: { documentId: string }) => {
+      const { documentId } = data;
+      const userId = (socket as any).userId;
+
+      if (userId && documentId) {
+        // Notifier les autres utilisateurs qu'un nouveau utilisateur demande une synchronisation
+        socket.to(`document:${documentId}`).emit("sync:requested", {
+          userId,
+          socketId: socket.id,
+        });
+      }
+    });
+
+    // Répondre à une demande de synchronisation
+    socket.on("sync:response", (data: { documentId: string; targetSocketId: string; content: string; version?: number }) => {
+      const { documentId, targetSocketId, content, version } = data;
+      const userId = (socket as any).userId;
+
+      if (userId && documentId && targetSocketId) {
+        // Envoyer le contenu actuel au nouvel utilisateur
+        io.to(targetSocketId).emit("sync:data", {
+          content,
+          version,
+          fromUserId: userId,
+        });
+      }
+    });
+
     // Quitter une room
     socket.on("leave:document", (data: { documentId: string }) => {
       handleLeaveDocument(socket, data.documentId, io);
@@ -180,7 +254,6 @@ export function setupSocketHandlers(io: SocketIOServer) {
       if (documentId) {
         handleLeaveDocument(socket, documentId, io);
       }
-      console.log(`Client déconnecté: ${socket.id}`);
     });
   });
 }
@@ -212,8 +285,6 @@ function handleLeaveDocument(
         userId,
         userFullName,
       });
-
-      console.log(`${userFullName} a quitté le document ${documentId}`);
 
       // Mettre à jour la liste des utilisateurs
       const connectedUsers = getConnectedUsers(io, documentId);

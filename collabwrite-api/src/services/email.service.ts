@@ -114,9 +114,8 @@ class EmailService {
                 : "Vous avez été invité"
             } à collaborer sur le document suivant :</p>
             <p><strong>📄 ${documentName}</strong></p>
-            <p>Test - Ce message est un email de test. La fonctionnalité complète sera disponible prochainement.</p>
-            <p>ID du document : <code>${documentId}</code></p>
-            <a href="#" class="button">Accéder au document</a>
+            <p>Cliquez sur le bouton ci-dessous pour accéder directement au document et commencer à collaborer en temps réel.</p>
+            <a href="http://localhost:5173/editor/${documentId}" class="button">Accéder au document</a>
             <p>À bientôt sur CollabWrite !</p>
           </div>
           <div class="footer">

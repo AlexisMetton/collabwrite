@@ -15,25 +15,37 @@ export interface DocumentRow {
 }
 
 export const documentService = {
-  async listDocuments(ownerId: string) {
+  async listDocuments(userId: string) {
+    // Récupérer les documents dont l'utilisateur est propriétaire OU collaborateur
     const result = await pool.query<DocumentRow>(
-      `SELECT * FROM documents WHERE owner_id = $1 AND is_deleted = FALSE ORDER BY updated_at DESC`,
-      [ownerId]
+      `SELECT DISTINCT d.*
+       FROM documents d
+       LEFT JOIN permissions p ON d.id = p.document_id
+       WHERE (d.owner_id = $1 OR p.user_id = $1)
+         AND d.is_deleted = FALSE
+       ORDER BY d.updated_at DESC`,
+      [userId]
     );
     return result.rows;
   },
 
-  async getDocumentById(id: string, ownerId: string) {
+  async getDocumentById(id: string, userId: string) {
+    // Récupérer le document si l'utilisateur est propriétaire OU collaborateur
     const result = await pool.query<DocumentRow>(
-      `SELECT * FROM documents WHERE id = $1 AND owner_id = $2 AND is_deleted = FALSE`,
-      [id, ownerId]
+      `SELECT DISTINCT d.*
+       FROM documents d
+       LEFT JOIN permissions p ON d.id = p.document_id
+       WHERE d.id = $1
+         AND (d.owner_id = $2 OR p.user_id = $2)
+         AND d.is_deleted = FALSE`,
+      [id, userId]
     );
     return result.rows[0] || null;
   },
 
   async getDocumentByNameAndFolder(ownerId: string, name: string, fileType: 'txt' | 'png' | 'pdf', folderId: string | null) {
     const result = await pool.query<DocumentRow>(
-      `SELECT * FROM documents 
+      `SELECT * FROM documents
        WHERE owner_id = $1 AND name = $2 AND file_type = $3 AND folder_id IS NOT DISTINCT FROM $4 AND is_deleted = FALSE`,
       [ownerId, name, fileType, folderId]
     );
@@ -53,7 +65,7 @@ export const documentService = {
 
     // Vérifier si un document avec le même nom, type et dossier existe déjà
     const existing = await this.getDocumentByNameAndFolder(ownerId, name, fileType, folderId);
-    
+
     if (existing) {
       // Si un document existe, le mettre à jour au lieu d'en créer un nouveau
       const updated = await this.updateDocument(existing.id, ownerId, {
@@ -79,7 +91,7 @@ export const documentService = {
     return result.rows[0];
   },
 
-  async updateDocument(id: string, ownerId: string, updates: {
+  async updateDocument(id: string, userId: string, updates: {
     name?: string;
     folderId?: string | null;
     description?: string | null;
@@ -116,23 +128,129 @@ export const documentService = {
     }
 
     if (fields.length === 0) {
-      const existing = await this.getDocumentById(id, ownerId);
+      const existing = await this.getDocumentById(id, userId);
       return existing;
     }
 
-    const setClause = fields.map((f, idx) => `${f} = $${idx + 3}`).join(', ');
+    // Vérifier si l'utilisateur a le droit de modifier (propriétaire OU collaborateur avec WRITE/ADMIN)
+    const accessCheck = await pool.query(
+      `SELECT d.id
+       FROM documents d
+       LEFT JOIN permissions p ON d.id = p.document_id
+       WHERE d.id = $1
+         AND (d.owner_id = $2 OR (p.user_id = $2 AND p.access_level IN ('WRITE', 'ADMIN')))
+         AND d.is_deleted = FALSE`,
+      [id, userId]
+    );
+
+    if (accessCheck.rows.length === 0) {
+      return null; // Pas de permission de modifier
+    }
+
+    const setClause = fields.map((f, idx) => `${f} = $${idx + 2}`).join(', ');
     const result = await pool.query<DocumentRow>(
-      `UPDATE documents SET ${setClause}, updated_at = NOW() WHERE id = $1 AND owner_id = $2 AND is_deleted = FALSE RETURNING *`,
-      [id, ownerId, ...values]
+      `UPDATE documents SET ${setClause}, updated_at = NOW() WHERE id = $1 AND is_deleted = FALSE RETURNING *`,
+      [id, ...values]
     );
     return result.rows[0] || null;
   },
 
-  async deleteDocument(id: string, ownerId: string) {
-    await pool.query(
-      `UPDATE documents SET is_deleted = TRUE, updated_at = NOW() WHERE id = $1 AND owner_id = $2`,
-      [id, ownerId]
+  async deleteDocument(id: string, userId: string) {
+    // Vérifier si l'utilisateur a le droit de supprimer (propriétaire OU collaborateur avec ADMIN)
+    const accessCheck = await pool.query(
+      `SELECT d.id
+       FROM documents d
+       LEFT JOIN permissions p ON d.id = p.document_id
+       WHERE d.id = $1
+         AND (d.owner_id = $2 OR (p.user_id = $2 AND p.access_level = 'ADMIN'))`,
+      [id, userId]
     );
+
+    if (accessCheck.rows.length === 0) {
+      throw new Error("Vous n'avez pas la permission de supprimer ce document");
+    }
+
+    await pool.query(
+      `UPDATE documents SET is_deleted = TRUE, updated_at = NOW() WHERE id = $1`,
+      [id]
+    );
+  },
+
+  /**
+   * Ajouter un collaborateur à un document
+   * @param documentId ID du document
+   * @param userId ID de l'utilisateur à ajouter comme collaborateur
+   * @param accessLevel Niveau d'accès (par défaut: WRITE)
+   */
+  async addCollaborator(documentId: string, userId: string, accessLevel: 'READ' | 'WRITE' | 'ADMIN' = 'WRITE') {
+    // Vérifier si une permission existe déjà
+    const existing = await pool.query(
+      `SELECT * FROM permissions WHERE document_id = $1 AND user_id = $2`,
+      [documentId, userId]
+    );
+
+    if (existing.rows.length > 0) {
+      // Si la permission existe déjà, la mettre à jour
+      await pool.query(
+        `UPDATE permissions SET access_level = $1 WHERE document_id = $2 AND user_id = $3`,
+        [accessLevel, documentId, userId]
+      );
+      return existing.rows[0];
+    }
+
+    // Sinon, créer une nouvelle permission
+    const newIdResult = await pool.query('SELECT gen_random_uuid() as id');
+    const id = newIdResult.rows[0].id as string;
+
+    const result = await pool.query(
+      `INSERT INTO permissions (id, document_id, user_id, access_level, created_at)
+       VALUES ($1, $2, $3, $4, NOW())
+       RETURNING *`,
+      [id, documentId, userId, accessLevel]
+    );
+
+    return result.rows[0];
+  },
+
+  /**
+   * Récupérer les collaborateurs d'un document
+   * @param documentId ID du document
+   */
+  async getCollaborators(documentId: string) {
+    const result = await pool.query(
+      `SELECT u.id, u.email, u.full_name, p.access_level, p.created_at
+       FROM permissions p
+       JOIN users u ON p.user_id = u.id
+       WHERE p.document_id = $1`,
+      [documentId]
+    );
+
+    return result.rows;
+  },
+
+  /**
+   * Vérifier si un utilisateur a accès à un document
+   * @param documentId ID du document
+   * @param userId ID de l'utilisateur
+   */
+  async hasAccess(documentId: string, userId: string): Promise<boolean> {
+    // Vérifier si l'utilisateur est le propriétaire
+    const ownerResult = await pool.query(
+      `SELECT id FROM documents WHERE id = $1 AND owner_id = $2`,
+      [documentId, userId]
+    );
+
+    if (ownerResult.rows.length > 0) {
+      return true;
+    }
+
+    // Vérifier si l'utilisateur a une permission
+    const permissionResult = await pool.query(
+      `SELECT id FROM permissions WHERE document_id = $1 AND user_id = $2`,
+      [documentId, userId]
+    );
+
+    return permissionResult.rows.length > 0;
   },
 };
 

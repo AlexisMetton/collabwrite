@@ -13,15 +13,19 @@ class SocketService {
       });
 
       this.socket.on("connect", () => {
-        console.log("Connecté au serveur WebSocket");
+        console.log("Socket connected");
       });
 
-      this.socket.on("disconnect", () => {
-        console.log("Déconnecté du serveur WebSocket");
+      this.socket.on("connect_error", (error) => {
+        console.error("Socket connection error:", error.message);
+      });
+
+      this.socket.on("disconnect", (reason) => {
+        console.log("Socket disconnected", reason);
       });
 
       this.socket.on("error", (error: { message: string }) => {
-        console.error("Erreur WebSocket:", error.message);
+        console.error("Socket error:", error.message);
       });
     }
 

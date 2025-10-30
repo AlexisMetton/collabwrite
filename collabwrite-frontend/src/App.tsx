@@ -1,27 +1,26 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "./contexts/AuthContext";
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import { Toaster } from "sonner";
+import { AuthProvider } from "./contexts/AuthContext";
 
 // Layouts & Components
-import { Header } from "./components/Header";
+import { AdminRoute } from "./components/AdminRoute";
 import { Footer } from "./components/Footer";
+import { Header } from "./components/Header";
+import { DashboardLayout } from "./components/layout/DashboardLayout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { PublicRoute } from "./components/PublicRoute";
-import { AdminRoute } from "./components/AdminRoute";
-import { DashboardLayout } from "./components/layout/DashboardLayout";
 
 // Pages
+import { AdminDashboard } from "./pages/AdminDashboard";
+import { DashboardPage } from "./pages/DashboardPage";
+import DocumentEditorPage from "./pages/DocumentEditorPage";
+import FileViewerPage from "./pages/FileViewerPage";
 import { HomePage } from "./pages/HomePage";
 import { LoginPage } from "./pages/LoginPage";
-import { RegisterPage } from "./pages/RegisterPage";
-import { DashboardPage } from "./pages/DashboardPage";
-import { ProfilePage } from "./pages/ProfilePage";
-import { AdminDashboard } from "./pages/AdminDashboard";
-import DocumentEditorPage from "./pages/DocumentEditorPage";
-import EditorPage from "./pages/EditorPage";
-import FileViewerPage from "./pages/FileViewerPage";
 import { MyDocumentsPage } from "./pages/MyDocumentsPage";
 import { MyFoldersPage } from "./pages/MyFoldersPage";
+import { ProfilePage } from "./pages/ProfilePage";
+import { RegisterPage } from "./pages/RegisterPage";
 
 // Layout pour les pages sans header/footer (login, register)
 function AuthLayout({ children }: { children: React.ReactNode }) {
@@ -45,7 +44,6 @@ function App() {
       <Router>
         <Toaster position="top-right" richColors />
         <Routes>
-
           <Route
             path="/"
             element={
@@ -56,7 +54,6 @@ function App() {
               </PublicRoute>
             }
           />
-
 
           <Route
             path="/login"
@@ -78,7 +75,6 @@ function App() {
               </PublicRoute>
             }
           />
-
 
           <Route
             path="/dashboard"
@@ -121,11 +117,11 @@ function App() {
             }
           />
           <Route
-            path="/editor/:pageId"
+            path="/editor/:documentId"
             element={
               <ProtectedRoute>
                 <DashboardLayout>
-                  <EditorPage />
+                  <DocumentEditorPage />
                 </DashboardLayout>
               </ProtectedRoute>
             }
@@ -140,6 +136,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+          {/* Alias supplémentaire si nécessaire */}
           <Route
             path="/document/:documentId"
             element={

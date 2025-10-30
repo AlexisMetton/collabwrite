@@ -50,12 +50,18 @@ export const InviteCollaboratorModal: React.FC<InviteCollaboratorModalProps> = (
       return;
     }
 
+    // Vérifier que le documentId est fourni
+    if (!documentId) {
+      toast.error("Erreur : ID du document manquant. Veuillez ouvrir le document avant d'inviter un collaborateur.");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
       const response = await api.post("/invite/send", {
         email: email.trim(),
-        documentId: documentId || "temp-doc-id",
+        documentId: documentId,
         documentName: documentName || "Document",
       });
 
