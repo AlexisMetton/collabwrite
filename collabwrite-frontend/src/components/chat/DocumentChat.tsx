@@ -38,9 +38,7 @@ export const DocumentChat: React.FC<DocumentChatProps> = ({
   const [isSending, setIsSending] = useState(false);
   const [socket, setSocket] = useState<Socket | null>(null);
   const [connectedUsers, setConnectedUsers] = useState<User[]>([]);
-  const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set());
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const typingTimeoutRef = useRef<NodeJS.Timeout>();
 
   // Scroll vers le bas quand de nouveaux messages arrivent
   const scrollToBottom = () => {
@@ -94,25 +92,6 @@ export const DocumentChat: React.FC<DocumentChatProps> = ({
         toast.info(`${user.userFullName} a quitté la conversation`);
       });
 
-      socketInstance.on(
-        "user:typing",
-        (user: { userId: string; userFullName: string }) => {
-          setTypingUsers((prev) => new Set(prev).add(user.userFullName));
-        }
-      );
-
-      socketInstance.on("user:stopped-typing", (user: { userId: string }) => {
-        setTypingUsers((prev) => {
-          const updated = new Set(prev);
-          // Trouver et supprimer l'utilisateur
-          connectedUsers.forEach((u) => {
-            if (u.userId === user.userId) {
-              updated.delete(u.userFullName);
-            }
-          });
-          return updated;
-        });
-      });
 
       socketInstance.on("error", (error: { message: string }) => {
         toast.error(error.message);
@@ -129,8 +108,6 @@ export const DocumentChat: React.FC<DocumentChatProps> = ({
         socket.off("users:list");
         socket.off("user:joined");
         socket.off("user:left");
-        socket.off("user:typing");
-        socket.off("user:stopped-typing");
         socket.off("error");
       }
     };
@@ -177,12 +154,6 @@ export const DocumentChat: React.FC<DocumentChatProps> = ({
       });
 
       setNewMessage("");
-
-      // Arrêter l'indicateur de saisie
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-      }
-      socket.emit("typing:stop", { documentId });
     } catch (error) {
       console.error("Erreur lors de l'envoi du message:", error);
       toast.error("Erreur lors de l'envoi du message");
@@ -191,22 +162,9 @@ export const DocumentChat: React.FC<DocumentChatProps> = ({
     }
   };
 
-  // Gérer l'indicateur de saisie
+  // Gérer le changement de texte
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNewMessage(e.target.value);
-
-    if (socket && e.target.value.length > 0) {
-      socket.emit("typing:start", { documentId });
-
-      // Réinitialiser le timeout
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-      }
-
-      typingTimeoutRef.current = setTimeout(() => {
-        socket.emit("typing:stop", { documentId });
-      }, 1000);
-    }
   };
 
   // Formater la date
@@ -310,13 +268,6 @@ export const DocumentChat: React.FC<DocumentChatProps> = ({
               </div>
             );
           })
-        )}
-        {typingUsers.size > 0 && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground italic">
-            <span>
-              {Array.from(typingUsers).join(", ")} est en train d'écrire...
-            </span>
-          </div>
         )}
         <div ref={messagesEndRef} />
       </div>

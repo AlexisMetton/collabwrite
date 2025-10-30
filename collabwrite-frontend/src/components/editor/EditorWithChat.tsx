@@ -1,23 +1,29 @@
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { MessageSquare } from "lucide-react";
-import React, { useState } from "react";
 import { DocumentChat } from "../chat/DocumentChat";
-import { Editor } from "./Editor";
+import { TiptapEditor } from "./TiptapEditor";
 
 interface EditorWithChatProps {
   documentId: string;
+  documentName?: string;
   content: string;
   onContentChange: (content: string) => void;
+  onRemoteContentChange: (content: string) => void;
   onSave?: () => void;
   placeholder?: string;
+  remoteVersion?: number;
 }
 
-export const EditorWithChat: React.FC<EditorWithChatProps> = ({
+export const EditorWithChat: React.FC<EditorWithChatProps> = React.memo(({
   documentId,
+  documentName,
   content,
   onContentChange,
+  onRemoteContentChange,
   onSave,
   placeholder,
+  remoteVersion = 0,
 }) => {
   const [isChatOpen, setIsChatOpen] = useState(false);
 
@@ -29,11 +35,15 @@ export const EditorWithChat: React.FC<EditorWithChatProps> = ({
           isChatOpen ? "mr-0" : ""
         }`}
       >
-        <Editor
+        <TiptapEditor
           content={content}
           onContentChange={onContentChange}
+          onRemoteContentChange={onRemoteContentChange}
           onSave={onSave}
           placeholder={placeholder}
+          documentId={documentId}
+          documentName={documentName}
+          remoteVersion={remoteVersion}
         />
 
         {/* Bouton pour ouvrir le chat (visible seulement quand le chat est fermé) */}
@@ -61,6 +71,8 @@ export const EditorWithChat: React.FC<EditorWithChatProps> = ({
       )}
     </div>
   );
-};
+});
+
+EditorWithChat.displayName = 'EditorWithChat';
 
 export default EditorWithChat;

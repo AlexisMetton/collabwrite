@@ -51,6 +51,17 @@ CREATE TABLE IF NOT EXISTS documents (
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Table des permissions (collaborateurs)
+CREATE TABLE IF NOT EXISTS permissions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    document_id UUID NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    access_level VARCHAR(10) NOT NULL CHECK (access_level IN ('READ', 'WRITE', 'ADMIN')),
+    granted_by UUID REFERENCES users(id) ON DELETE SET NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(document_id, user_id)
+);
+
 -- Table des messages de chat
 CREATE TABLE IF NOT EXISTS messages (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -68,6 +79,8 @@ CREATE INDEX IF NOT EXISTS idx_sessions_expires_at ON sessions(expires_at);
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_documents_owner_id ON documents(owner_id);
 CREATE INDEX IF NOT EXISTS idx_documents_folder_id ON documents(folder_id);
+CREATE INDEX IF NOT EXISTS idx_permissions_document_id ON permissions(document_id);
+CREATE INDEX IF NOT EXISTS idx_permissions_user_id ON permissions(user_id);
 CREATE INDEX IF NOT EXISTS idx_messages_document_id ON messages(document_id);
 CREATE INDEX IF NOT EXISTS idx_messages_user_id ON messages(user_id);
 CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(created_at);
