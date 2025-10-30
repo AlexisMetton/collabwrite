@@ -357,7 +357,7 @@ export const DashboardPage: React.FC = () => {
 
                   {/* Badge du dossier si présent */}
                   {file.folderId && (() => {
-                    const folder = folders.find(f => f.id === file.folderId);
+                    const folder = allFolders.find(f => f.id === file.folderId);
                     return folder ? (
                       <div className="flex items-center gap-1">
                         <Badge variant="outline" className="text-xs flex items-center gap-1">
