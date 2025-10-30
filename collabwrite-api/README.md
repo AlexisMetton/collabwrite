@@ -9,7 +9,6 @@ API backend de l'application CollabWrite, une application de rédaction collabor
 - **TypeScript** - Langage de programmation typé
 - **Nodemon** - Outil de développement pour redémarrer automatiquement le serveur
 - **ts-node** - Exécution TypeScript directe sans compilation
-- **Prisma** - Permet d'intéragir une base de données Postgres avec du Typescript
 
 ## 📋 Prérequis
 
@@ -48,7 +47,6 @@ src/
 
 - **TypeScript** : `tsconfig.json`
 - **Package** : `package.json`
-- **Prisma** : `prisma.config.ts`
 - **Docker** : `docker-compose.yml`
 - **Environment** : `.env` (à créer)
 
@@ -75,15 +73,7 @@ http://localhost:3000/api
 
 ## 🔐 Variables d'environnement
 
-Créez un fichier `.env` à la racine du dossier API :
-
-```env
-PORT=3000
-NODE_ENV=development
-DATABASE_URL=mongodb://localhost:27017/collabwrite
-JWT_SECRET=your-secret-key
-CORS_ORIGIN=http://localhost:5173
-```
+Créez un fichier `.env` à la racine du dossier API en reprenant le fichier `env.example` :
 
 ## 🤝 Contribution
 
