@@ -190,6 +190,41 @@ export const MyFoldersPage: React.FC = () => {
 
   const organiseFiles = organiseFilesInFolder(folders, files);
 
+  const fileCard = (file: File) => {
+    return(
+      <Card
+        key={file.id}
+        className="p-2 hover:shadow-md transition-shadow cursor-pointer"
+        onClick={() => handleFileClick(file)}
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <span className="font-medium text-xs text-foreground truncate">
+              {file.name}
+            </span>
+            {file.isDirty && (
+              <div className="w-2 h-2 bg-orange-500 rounded-full flex-shrink-0" />
+            )}
+          </div>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleMoveFile(file);
+              }}
+              className="h-5 w-5 p-0"
+              title="Déplacer"
+            >
+              <FolderOpen className="h-3 w-3" />
+            </Button>
+          </div>
+        </div>
+      </Card>
+    )
+  }
+
   if (isLoading) {
     return (
       <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
@@ -308,7 +343,6 @@ export const MyFoldersPage: React.FC = () => {
                         <>
                           {subFolders.map((subFolder) => {
                             const folderFilesSubFolder = organiseFiles.find((f) => f.folderId === subFolder.id)?.listFiles;
-                            console.log(folderFilesSubFolder)
                             return (
                               <>
                                 <Card key={subFolder.id} className="p-3 sm:p-4 hover:shadow-md transition-shadow">
@@ -349,36 +383,7 @@ export const MyFoldersPage: React.FC = () => {
                                 </Card>
                                 {folderFilesSubFolder?.map((file) => (
                                   <div className="pl-8">
-                                    <Card
-                                      key={file.id}
-                                      className="p-2 hover:shadow-md transition-shadow cursor-pointer"
-                                      onClick={() => handleFileClick(file)}
-                                    >
-                                      <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2 flex-1 min-w-0">
-                                          <span className="font-medium text-xs text-foreground truncate">
-                                            {file.name}
-                                          </span>
-                                          {file.isDirty && (
-                                            <div className="w-2 h-2 bg-orange-500 rounded-full flex-shrink-0" />
-                                          )}
-                                        </div>
-                                        <div className="flex items-center gap-1">
-                                          <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              handleMoveFile(file);
-                                            }}
-                                            className="h-5 w-5 p-0"
-                                            title="Déplacer"
-                                          >
-                                            <FolderOpen className="h-3 w-3" />
-                                          </Button>
-                                        </div>
-                                      </div>
-                                    </Card>
+                                    {fileCard(file)}
                                   </div>
                                 ))}
                               </>
@@ -386,36 +391,7 @@ export const MyFoldersPage: React.FC = () => {
                           })}
 
                           {folderFiles?.map((file) => (
-                            <Card
-                              key={file.id}
-                              className="p-2 hover:shadow-md transition-shadow cursor-pointer"
-                              onClick={() => handleFileClick(file)}
-                            >
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2 flex-1 min-w-0">
-                                  <span className="font-medium text-xs text-foreground truncate">
-                                    {file.name}
-                                  </span>
-                                  {file.isDirty && (
-                                    <div className="w-2 h-2 bg-orange-500 rounded-full flex-shrink-0" />
-                                  )}
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleMoveFile(file);
-                                    }}
-                                    className="h-5 w-5 p-0"
-                                    title="Déplacer"
-                                  >
-                                    <FolderOpen className="h-3 w-3" />
-                                  </Button>
-                                </div>
-                              </div>
-                            </Card>
+                            fileCard(file)
                           ))}
                         </>
                       )}
