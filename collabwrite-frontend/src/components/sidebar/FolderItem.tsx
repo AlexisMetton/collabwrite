@@ -88,7 +88,7 @@ export const FolderItem: React.FC<FolderItemProps> = ({
   
     return organiseFiles;
   }
-  const organiseFiles = organiseFilesInFolder(folders, files);
+  let organiseFiles = organiseFilesInFolder(folders, files);
 
   // Récupérer les fichiers de ce dossier depuis le store
   let folderFiles = organiseFiles.find((file) => file.folderId === folder.id)?.listFiles;
@@ -103,14 +103,16 @@ export const FolderItem: React.FC<FolderItemProps> = ({
 
   // Filtrer selon la recherche
   if (searchQuery) {
-    folderFiles = folderFiles?.filter(
+    const result = files?.filter(
       (file) =>
         file.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         file.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
         file.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (file.description &&
           file.description.toLowerCase().includes(searchQuery.toLowerCase()))
-    );
+    )
+
+    organiseFiles = organiseFilesInFolder(folders, result);
   }
 
   // Appliquer le tri
