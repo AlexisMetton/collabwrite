@@ -95,10 +95,17 @@ export const FolderItem: React.FC<FolderItemProps> = ({
 
   // Appliquer le filtre de type
   if (fileTypeFilter !== "all") {
-    folderFiles =
+    /* folderFiles =
       fileTypeFilter === "image"
         ? folderFiles?.filter((file) => file.fileType === "png")
-        : folderFiles?.filter((file) => file.fileType === fileTypeFilter);
+        : folderFiles?.filter((file) => file.fileType === fileTypeFilter); */
+    
+    const result =
+      fileTypeFilter === "image"
+        ? folderFiles?.filter((file) => file.fileType === "png")
+        : folderFiles?.filter((file) => file.fileType === fileTypeFilter)
+
+    organiseFiles = organiseFilesInFolder(folders, result);
   }
 
   // Filtrer selon la recherche
