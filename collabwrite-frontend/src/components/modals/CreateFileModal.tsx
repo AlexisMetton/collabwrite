@@ -1,8 +1,3 @@
-/**
- * CreateFileModal - Modale pour créer un nouveau fichier
- * Projet Spé 4 - Composant de création de fichier avec sélection de type
- */
-
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -13,12 +8,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { folderService } from "@/services/folder.service";
-import CreateFolderModal from "./CreateFolderModal";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import type { FileType } from "@/types/document";
 import { useDocumentStore } from "@/hooks/useDocumentStore";
+import { folderService } from "@/services/folder.service";
+import type { FileType } from "@/types/document";
 import {
   FileText,
   FileType as FileTypeIcon,
@@ -28,6 +22,7 @@ import {
   X,
 } from "lucide-react";
 import React, { useCallback, useState } from "react";
+import CreateFolderModal from "./CreateFolderModal";
 
 interface CreateFileModalProps {
   isOpen: boolean;
@@ -54,7 +49,7 @@ export const CreateFileModal: React.FC<CreateFileModalProps> = ({
 
   const handleTypeSelect = (type: FileType) => {
     setSelectedType(type);
-    if(type == "folder"){
+    if (type == "folder") {
       setIsCreateFolderOpen(true);
     }
     setStep("details");
@@ -63,19 +58,24 @@ export const CreateFileModal: React.FC<CreateFileModalProps> = ({
   const handleCloseModal = () => {
     setIsCreateFolderOpen(false);
     handleClose();
-  }
+  };
 
-  const handleConfirmCreateFolder = async (name: string, color: string, folderId: string | null) => {
+  const handleConfirmCreateFolder = async (
+    name: string,
+    color: string,
+    folderId: string | null
+  ) => {
     try {
       await folderService.createFolder({ name, color, folderId });
       await loadFolders();
       handleClose();
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { error?: string } } };
+      setError(
+        error.response?.data?.error || "Erreur lors de l'ajout du dossier"
+      );
     }
-    catch (err: unknown){
-      const error = err as { response?: { data?: { error?: string } } }
-      setError(error.response?.data?.error || "Erreur lors de l'ajout du dossier");
-    }
-  }
+  };
 
   const handleBack = () => {
     setStep("type");
@@ -88,14 +88,20 @@ export const CreateFileModal: React.FC<CreateFileModalProps> = ({
     e.preventDefault();
     if (fileName.trim() && selectedType) {
       let finalFileName = fileName.trim();
-      
+
       // S'assurer que les images et PDFs ont l'extension appropriée
-      if (selectedType === "png" && !finalFileName.toLowerCase().endsWith(".png")) {
+      if (
+        selectedType === "png" &&
+        !finalFileName.toLowerCase().endsWith(".png")
+      ) {
         finalFileName = finalFileName + ".png";
-      } else if (selectedType === "pdf" && !finalFileName.toLowerCase().endsWith(".pdf")) {
+      } else if (
+        selectedType === "pdf" &&
+        !finalFileName.toLowerCase().endsWith(".pdf")
+      ) {
         finalFileName = finalFileName + ".pdf";
       }
-      
+
       // Pour les fichiers texte, pas besoin de fichier uploadé
       if (selectedType === "txt") {
         onConfirm(finalFileName, selectedType);
@@ -138,7 +144,12 @@ export const CreateFileModal: React.FC<CreateFileModalProps> = ({
           setUploadedFile(file);
           // Extraire le nom du fichier et ajouter l'extension appropriée
           const nameWithoutExt = file.name.replace(/\.[^/.]+$/, "");
-          const extension = selectedType === "png" ? ".png" : selectedType === "pdf" ? ".pdf" : "";
+          const extension =
+            selectedType === "png"
+              ? ".png"
+              : selectedType === "pdf"
+              ? ".pdf"
+              : "";
           const finalName = nameWithoutExt + extension;
           if (!fileName || fileName === nameWithoutExt) {
             setFileName(finalName);
@@ -199,7 +210,9 @@ export const CreateFileModal: React.FC<CreateFileModalProps> = ({
           {step === "type" ? (
             <>
               <DialogHeader>
-                <DialogTitle>Créer un nouveau fichier ou un nouveau dossier</DialogTitle>
+                <DialogTitle>
+                  Créer un nouveau fichier ou un nouveau dossier
+                </DialogTitle>
                 <DialogDescription>
                   Choisissez le type de fichier que vous souhaitez créer.
                 </DialogDescription>
@@ -342,7 +355,9 @@ export const CreateFileModal: React.FC<CreateFileModalProps> = ({
                                 <FileTypeIcon className="h-8 w-8 text-red-600" />
                               )}
                               <div className="text-left">
-                                <p className="font-medium">{uploadedFile.name}</p>
+                                <p className="font-medium">
+                                  {uploadedFile.name}
+                                </p>
                                 <p className="text-sm text-muted-foreground">
                                   {(uploadedFile.size / 1024).toFixed(2)} KB
                                 </p>
@@ -406,7 +421,7 @@ export const CreateFileModal: React.FC<CreateFileModalProps> = ({
         </DialogContent>
       </Dialog>
 
-      <CreateFolderModal 
+      <CreateFolderModal
         isOpen={isCreateFolderOpen}
         onClose={handleCloseModal}
         onConfirm={handleConfirmCreateFolder}

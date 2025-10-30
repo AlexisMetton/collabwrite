@@ -1,9 +1,4 @@
-/**
- * RenameFolderModal - Modale pour renommer un dossier
- * Projet Spé 4 - Composant de renommage de dossier
- */
-
-import React, { useState, useEffect } from 'react';
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -11,11 +6,11 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { FolderEdit } from 'lucide-react';
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { FolderEdit } from "lucide-react";
+import React, { useEffect, useState } from "react";
 
 interface RenameFolderModalProps {
   isOpen: boolean;
@@ -60,7 +55,8 @@ export const RenameFolderModal: React.FC<RenameFolderModalProps> = ({
             Renommer le dossier
           </DialogTitle>
           <DialogDescription>
-            Modifiez le nom de votre dossier. Les fichiers ne seront pas affectés.
+            Modifiez le nom de votre dossier. Les fichiers ne seront pas
+            affectés.
           </DialogDescription>
         </DialogHeader>
 
@@ -96,4 +92,3 @@ export const RenameFolderModal: React.FC<RenameFolderModalProps> = ({
 };
 
 export default RenameFolderModal;
-

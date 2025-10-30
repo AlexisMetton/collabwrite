@@ -195,21 +195,18 @@ export function setupSocketHandlers(io: SocketIOServer) {
     });
 
     // Tracking de la position du curseur
-    socket.on("cursor:move", (data: { documentId: string; position: number; selection?: { start: number; end: number } }) => {
-      const { documentId, position, selection } = data;
+    socket.on("cursor:move", (data: { documentId: string; userId: string; userName: string; from: number; to: number }) => {
+      const { documentId, from, to } = data;
       const userId = (socket as any).userId;
-      const userFullName = (socket as any).userFullName;
-      const userEmail = (socket as any).userEmail;
+      const userName = (socket as any).userFullName;
 
       if (userId && documentId) {
         // Diffuser la position du curseur aux autres utilisateurs
-        socket.to(`document:${documentId}`).emit("cursor:update", {
+        socket.to(`document:${documentId}`).emit("cursor:moved", {
           userId,
-          userFullName,
-          userEmail,
-          position,
-          selection,
-          timestamp: new Date().toISOString(),
+          userName,
+          from,
+          to,
         });
       }
     });

@@ -1,9 +1,4 @@
-/**
- * DeleteFolderModal - Modale pour supprimer un dossier
- * Projet Spé 4 - Composant de confirmation de suppression de dossier
- */
-
-import React from 'react';
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -11,10 +6,10 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { AlertTriangle } from 'lucide-react';
-import type { Folder } from '@/types/document';
+} from "@/components/ui/dialog";
+import type { Folder } from "@/types/document";
+import { AlertTriangle } from "lucide-react";
+import React from "react";
 
 interface DeleteFolderModalProps {
   isOpen: boolean;
@@ -45,7 +40,8 @@ export const DeleteFolderModal: React.FC<DeleteFolderModalProps> = ({
             Supprimer le dossier {folder.name}
           </DialogTitle>
           <DialogDescription>
-            Cette action est irréversible. Êtes-vous sûr de vouloir supprimer le dossier {folder.name} ?
+            Cette action est irréversible. Êtes-vous sûr de vouloir supprimer le
+            dossier {folder.name} ?
           </DialogDescription>
         </DialogHeader>
 
@@ -60,7 +56,7 @@ export const DeleteFolderModal: React.FC<DeleteFolderModalProps> = ({
               </div>
               <div>
                 <p className="font-medium">{folder.name}</p>
-{/*                 <p className="text-sm text-muted-foreground">
+                {/*                 <p className="text-sm text-muted-foreground">
                   Créé le {folder.createdAt.toLocaleDateString('fr-FR')}
                 </p> */}
               </div>
@@ -69,7 +65,8 @@ export const DeleteFolderModal: React.FC<DeleteFolderModalProps> = ({
 
           <div className="mt-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
             <p className="text-sm text-destructive font-medium">
-              ⚠️ Attention : Tous les fichiers de ce dossier seront également supprimés !
+              ⚠️ Attention : Tous les fichiers de ce dossier seront également
+              supprimés !
             </p>
           </div>
         </div>
@@ -78,11 +75,7 @@ export const DeleteFolderModal: React.FC<DeleteFolderModalProps> = ({
           <Button type="button" variant="outline" onClick={onClose}>
             Annuler
           </Button>
-          <Button
-            type="button"
-            variant="destructive"
-            onClick={handleConfirm}
-          >
+          <Button type="button" variant="destructive" onClick={handleConfirm}>
             Supprimer définitivement
           </Button>
         </DialogFooter>
@@ -92,4 +85,3 @@ export const DeleteFolderModal: React.FC<DeleteFolderModalProps> = ({
 };
 
 export default DeleteFolderModal;
-

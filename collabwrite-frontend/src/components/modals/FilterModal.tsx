@@ -1,9 +1,5 @@
-/**
- * FilterModal - Modale pour filtrer les fichiers
- * Projet Spé 4 - Composant de filtrage
- */
-
-import React, { useState } from 'react';
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -11,11 +7,10 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Filter, X } from 'lucide-react';
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Filter, X } from "lucide-react";
+import React, { useState } from "react";
 
 interface FilterModalProps {
   isOpen: boolean;
@@ -31,18 +26,18 @@ export interface FilterOptions {
 }
 
 const FILE_TYPES = [
-  { value: 'txt', label: 'Texte' },
-  { value: 'png', label: 'Image' },
-  { value: 'pdf', label: 'PDF' },
+  { value: "txt", label: "Texte" },
+  { value: "png", label: "Image" },
+  { value: "pdf", label: "PDF" },
 ];
 
 const COMMON_TAGS = [
-  'projet',
-  'notes',
-  'réunion',
-  'documentation',
-  'important',
-  'brouillon',
+  "projet",
+  "notes",
+  "réunion",
+  "documentation",
+  "important",
+  "brouillon",
 ];
 
 export const FilterModal: React.FC<FilterModalProps> = ({
@@ -107,7 +102,9 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                 <Badge
                   key={type.value}
                   variant={
-                    filters.fileTypes.includes(type.value) ? 'default' : 'outline'
+                    filters.fileTypes.includes(type.value)
+                      ? "default"
+                      : "outline"
                   }
                   className="cursor-pointer"
                   onClick={() => handleToggleFileType(type.value)}
@@ -128,14 +125,12 @@ export const FilterModal: React.FC<FilterModalProps> = ({
               {COMMON_TAGS.map((tag) => (
                 <Badge
                   key={tag}
-                  variant={filters.tags.includes(tag) ? 'default' : 'outline'}
+                  variant={filters.tags.includes(tag) ? "default" : "outline"}
                   className="cursor-pointer"
                   onClick={() => handleToggleTag(tag)}
                 >
                   {tag}
-                  {filters.tags.includes(tag) && (
-                    <X className="ml-1 h-3 w-3" />
-                  )}
+                  {filters.tags.includes(tag) && <X className="ml-1 h-3 w-3" />}
                 </Badge>
               ))}
             </div>
@@ -178,4 +173,3 @@ export const FilterModal: React.FC<FilterModalProps> = ({
 };
 
 export default FilterModal;
-

@@ -1,8 +1,3 @@
-/**
- * InviteCollaboratorModal - Modale pour inviter un collaborateur sur un document
- * Permet d'envoyer une invitation par email
- */
-
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -14,10 +9,10 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Mail, Loader2 } from "lucide-react";
+import api from "@/services/api";
+import { Loader2, Mail } from "lucide-react";
 import React, { useState } from "react";
 import { toast } from "sonner";
-import api from "@/services/api";
 
 interface InviteCollaboratorModalProps {
   isOpen: boolean;
@@ -26,12 +21,9 @@ interface InviteCollaboratorModalProps {
   documentName?: string;
 }
 
-export const InviteCollaboratorModal: React.FC<InviteCollaboratorModalProps> = ({
-  isOpen,
-  onClose,
-  documentId,
-  documentName,
-}) => {
+export const InviteCollaboratorModal: React.FC<
+  InviteCollaboratorModalProps
+> = ({ isOpen, onClose, documentId, documentName }) => {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -52,7 +44,9 @@ export const InviteCollaboratorModal: React.FC<InviteCollaboratorModalProps> = (
 
     // Vérifier que le documentId est fourni
     if (!documentId) {
-      toast.error("Erreur : ID du document manquant. Veuillez ouvrir le document avant d'inviter un collaborateur.");
+      toast.error(
+        "Erreur : ID du document manquant. Veuillez ouvrir le document avant d'inviter un collaborateur."
+      );
       return;
     }
 
@@ -69,9 +63,10 @@ export const InviteCollaboratorModal: React.FC<InviteCollaboratorModalProps> = (
       handleClose();
     } catch (error: any) {
       console.error("Erreur lors de l'envoi de l'invitation:", error);
-      const errorMessage = error.response?.data?.error ||
-                          error.message ||
-                          "Erreur lors de l'envoi de l'invitation";
+      const errorMessage =
+        error.response?.data?.error ||
+        error.message ||
+        "Erreur lors de l'envoi de l'invitation";
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -110,7 +105,8 @@ export const InviteCollaboratorModal: React.FC<InviteCollaboratorModalProps> = (
                 disabled={isLoading}
               />
               <p className="text-xs text-muted-foreground">
-                La personne recevra un email avec un lien pour accéder au document.
+                La personne recevra un email avec un lien pour accéder au
+                document.
               </p>
             </div>
           </div>
@@ -145,4 +141,3 @@ export const InviteCollaboratorModal: React.FC<InviteCollaboratorModalProps> = (
 };
 
 export default InviteCollaboratorModal;
-

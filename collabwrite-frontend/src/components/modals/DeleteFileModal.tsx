@@ -1,9 +1,4 @@
-/**
- * DeleteFileModal - Modale pour supprimer un fichier
- * Projet Spé 4 - Composant de confirmation de suppression de fichier
- */
-
-import React from 'react';
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -11,10 +6,15 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { AlertTriangle, FileText, Image, FileType as FileTypeIcon } from 'lucide-react';
-import type { File } from '@/types/document';
+} from "@/components/ui/dialog";
+import type { File } from "@/types/document";
+import {
+  AlertTriangle,
+  FileText,
+  FileType as FileTypeIcon,
+  Image,
+} from "lucide-react";
+import React from "react";
 
 interface DeleteFileModalProps {
   isOpen: boolean;
@@ -38,9 +38,9 @@ export const DeleteFileModal: React.FC<DeleteFileModalProps> = ({
 
   const getFileIcon = () => {
     switch (file.fileType) {
-      case 'png':
+      case "png":
         return <Image className="h-4 w-4 text-primary" />;
-      case 'pdf':
+      case "pdf":
         return <FileTypeIcon className="h-4 w-4 text-primary" />;
       default:
         return <FileText className="h-4 w-4 text-primary" />;
@@ -56,7 +56,8 @@ export const DeleteFileModal: React.FC<DeleteFileModalProps> = ({
             Supprimer le fichier
           </DialogTitle>
           <DialogDescription>
-            Cette action est irréversible. Êtes-vous sûr de vouloir supprimer ce fichier ?
+            Cette action est irréversible. Êtes-vous sûr de vouloir supprimer ce
+            fichier ?
           </DialogDescription>
         </DialogHeader>
 
@@ -86,11 +87,7 @@ export const DeleteFileModal: React.FC<DeleteFileModalProps> = ({
           <Button type="button" variant="outline" onClick={onClose}>
             Annuler
           </Button>
-          <Button
-            type="button"
-            variant="destructive"
-            onClick={handleConfirm}
-          >
+          <Button type="button" variant="destructive" onClick={handleConfirm}>
             Supprimer définitivement
           </Button>
         </DialogFooter>
@@ -100,4 +97,3 @@ export const DeleteFileModal: React.FC<DeleteFileModalProps> = ({
 };
 
 export default DeleteFileModal;
-

@@ -1,20 +1,20 @@
+import { AudioCallButton } from "@/components/audio/AudioCallButton";
+import { AudioControls } from "@/components/audio/AudioControls";
+import { AudioStreams } from "@/components/audio/AudioStreams";
+import { ActiveUsers } from "@/components/collaboration/ActiveUsers";
 import { EditorWithChat } from "@/components/editor/EditorWithChat";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useDocumentStore } from "@/hooks/useDocumentStore";
-import { ArrowLeft, FileText, Save, Trash2 } from "lucide-react";
-import React, { useEffect, useRef, useState, useCallback } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { useWebRTC } from "@/hooks/useWebRTC";
-import { AudioCallButton } from "@/components/audio/AudioCallButton";
-import { AudioControls } from "@/components/audio/AudioControls";
-import { AudioStreams } from "@/components/audio/AudioStreams";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDocumentCollaboration } from "@/hooks/useDocumentCollaboration";
-import { ActiveUsers } from "@/components/collaboration/ActiveUsers";
+import { useDocumentStore } from "@/hooks/useDocumentStore";
+import { useWebRTC } from "@/hooks/useWebRTC";
+import { ArrowLeft, FileText, Save, Trash2 } from "lucide-react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
 export const DocumentEditorPage: React.FC = () => {
   const { documentId } = useParams<{ documentId: string }>();
@@ -33,6 +33,7 @@ export const DocumentEditorPage: React.FC = () => {
   const [documentTitle, setDocumentTitle] = useState("");
   const [documentContent, setDocumentContent] = useState("");
   const [remoteVersion, setRemoteVersion] = useState(0);
+  const [remoteCursors, setRemoteCursors] = useState<any[]>([]);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Charger le document au montage
@@ -48,24 +49,43 @@ export const DocumentEditorPage: React.FC = () => {
   }, [documentId, files, setCurrentFile]);
 
   // Gérer les mises à jour de contenu distantes
-  const handleRemoteContentUpdate = useCallback((content: string, fromUserId: string) => {
-    // Appliquer immédiatement pour éviter la perte de données
-    setDocumentContent(content);
-    setRemoteVersion((v) => v + 1);
+  const handleRemoteContentUpdate = useCallback(
+    (content: string, fromUserId: string) => {
+      // Appliquer immédiatement pour éviter la perte de données
+      setDocumentContent(content);
+      setRemoteVersion((v) => v + 1);
 
-    // Mise à jour du store en différé (non critique)
-    if (currentFile) {
-      setTimeout(() => {
-        updateFile(currentFile.id, { content }, false);
-      }, 0);
-    }
-  }, [currentFile?.id, updateFile]);
+      // Mise à jour du store en différé (non critique)
+      if (currentFile) {
+        setTimeout(() => {
+          updateFile(currentFile.id, { content }, false);
+        }, 0);
+      }
+    },
+    [currentFile?.id, updateFile]
+  );
 
   // Hook de collaboration
-  const { connectedUsers, isConnected, sendContentUpdate } = useDocumentCollaboration({
-    documentId: documentId || '',
-    userId: user?.id || '',
+  const {
+    connectedUsers,
+    isConnected,
+    sendContentUpdate,
+    sendCursorUpdate,
+    remoteCursors: cursorData,
+  } = useDocumentCollaboration({
+    documentId: documentId || "",
+    userId: user?.id || "",
+    userName: user?.fullName || "Anonyme",
     onContentUpdate: handleRemoteContentUpdate,
+    onCursorUpdate: (cursors) => {
+      const cursorPositions = cursors.map((cursor) => ({
+        userId: cursor.userId,
+        userName: cursor.userName,
+        color: getColorForUser(cursor.userId),
+        position: { top: 0, left: cursor.from },
+      }));
+      setRemoteCursors(cursorPositions);
+    },
   });
 
   // WebRTC pour les appels audio
@@ -81,27 +101,38 @@ export const DocumentEditorPage: React.FC = () => {
     toggleMute,
   } = useWebRTC({
     roomId: `document-${documentId}`,
-    userId: user?.id || 'anonymous',
-    userName: user?.fullName || 'Utilisateur anonyme',
+    userId: user?.id || "anonymous",
+    userName: user?.fullName || "Utilisateur anonyme",
   });
 
   // Gérer les changements locaux de contenu
-  const handleContentChange = useCallback((content: string) => {
-    setDocumentContent(content);
+  const handleContentChange = useCallback(
+    (content: string) => {
+      setDocumentContent(content);
 
-    // Envoyer immédiatement via WebSocket (pas de debounce pour éviter la perte de données)
-    sendContentUpdate(content);
+      // Envoyer immédiatement via WebSocket (pas de debounce pour éviter la perte de données)
+      sendContentUpdate(content);
 
-    // Debouncer seulement la mise à jour du store local (non critique)
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-    }
-    debounceTimerRef.current = setTimeout(() => {
-      if (currentFile) {
-        updateFile(currentFile.id, { content }, false);
+      // Debouncer seulement la mise à jour du store local (non critique)
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
       }
-    }, 500);
-  }, [sendContentUpdate, currentFile?.id, updateFile]);
+      debounceTimerRef.current = setTimeout(() => {
+        if (currentFile) {
+          updateFile(currentFile.id, { content }, false);
+        }
+      }, 500);
+    },
+    [sendContentUpdate, currentFile?.id, updateFile]
+  );
+
+  // Gérer les mouvements de curseur
+  const handleCursorMove = useCallback(
+    (position: { from: number; to: number }) => {
+      sendCursorUpdate(position);
+    },
+    [sendCursorUpdate]
+  );
 
   // Gérer les changements de titre
   const handleTitleChange = (title: string) => {
@@ -134,7 +165,6 @@ export const DocumentEditorPage: React.FC = () => {
     }
   };
 
-  // Nettoyage
   useEffect(() => {
     return () => {
       if (debounceTimerRef.current) {
@@ -148,6 +178,23 @@ export const DocumentEditorPage: React.FC = () => {
 
   const handleBack = () => {
     navigate("/dashboard");
+  };
+
+  const getColorForUser = (userId: string): string => {
+    const colors = [
+      "#3B82F6", // blue
+      "#10B981", // green
+      "#F59E0B", // amber
+      "#EF4444", // red
+      "#8B5CF6", // purple
+      "#EC4899", // pink
+      "#14B8A6", // teal
+      "#F97316", // orange
+    ];
+    const hash = userId
+      .split("")
+      .reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return colors[hash % colors.length];
   };
 
   const handleDelete = async () => {
@@ -274,6 +321,8 @@ export const DocumentEditorPage: React.FC = () => {
           onSave={handleSave}
           placeholder="Commencez à écrire votre contenu..."
           remoteVersion={remoteVersion}
+          cursors={remoteCursors}
+          onCursorMove={handleCursorMove}
         />
       </div>
 
@@ -283,4 +332,3 @@ export const DocumentEditorPage: React.FC = () => {
 };
 
 export default DocumentEditorPage;
-

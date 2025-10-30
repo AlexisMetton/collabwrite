@@ -1,9 +1,4 @@
-/**
- * RenameFileModal - Modale pour renommer un fichier
- * Projet Spé 4 - Composant de renommage de fichier
- */
-
-import React, { useState, useEffect } from 'react';
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -11,11 +6,11 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { FileEdit } from 'lucide-react';
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { FileEdit } from "lucide-react";
+import React, { useEffect, useState } from "react";
 
 interface RenameFileModalProps {
   isOpen: boolean;
@@ -96,4 +91,3 @@ export const RenameFileModal: React.FC<RenameFileModalProps> = ({
 };
 
 export default RenameFileModal;
-

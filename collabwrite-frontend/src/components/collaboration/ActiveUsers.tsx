@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { Users, ChevronDown } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { ChevronDown, Users } from 'lucide-react';
+import React, { useState } from 'react';
 
 interface User {
   userId: string;
@@ -48,9 +48,6 @@ export const ActiveUsers: React.FC<ActiveUsersProps> = React.memo(({ users, curr
 
   // Total des utilisateurs connectés (incluant l'utilisateur courant)
   const totalUsers = users.length;
-
-  // Filtrer l'utilisateur courant pour la liste
-  const otherUsers = users.filter((u) => u.userId !== currentUserId);
 
   if (totalUsers === 0) {
     return null;

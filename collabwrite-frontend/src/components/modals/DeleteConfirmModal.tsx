@@ -1,9 +1,4 @@
-/**
- * DeleteConfirmModal - Modale de confirmation de suppression générique
- * Projet Spé 4 - Composant de confirmation de suppression
- */
-
-import React from 'react';
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -11,9 +6,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { AlertTriangle } from 'lucide-react';
+} from "@/components/ui/dialog";
+import { AlertTriangle } from "lucide-react";
+import React from "react";
 
 interface DeleteConfirmModalProps {
   isOpen: boolean;
@@ -29,8 +24,8 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
   isOpen,
   onClose,
   onConfirm,
-  title = 'Confirmer la suppression',
-  description = 'Cette action est irréversible. Êtes-vous sûr de vouloir continuer ?',
+  title = "Confirmer la suppression",
+  description = "Cette action est irréversible. Êtes-vous sûr de vouloir continuer ?",
   itemName,
   warningMessage,
 }) => {
@@ -80,4 +75,3 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
 };
 
 export default DeleteConfirmModal;
-

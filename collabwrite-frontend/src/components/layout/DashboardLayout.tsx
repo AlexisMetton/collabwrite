@@ -1,8 +1,3 @@
-/**
- * DashboardLayout - Layout avec Sidebar pour les pages Dashboard et Editor
- * Projet Spé 4 - Layout principal de l'application
- */
-
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { Sidebar } from "@/components/sidebar/Sidebar";
@@ -74,7 +69,9 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         </aside>
 
         {/* Contenu principal */}
-        <main className="flex-1 overflow-auto bg-background">{children}</main>
+        <main className="flex-1 overflow-auto bg-background px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+          <div className="mx-auto w-full max-w-[1600px]">{children}</div>
+        </main>
       </div>
       <Footer />
     </div>

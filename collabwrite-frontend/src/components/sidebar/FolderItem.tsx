@@ -1,9 +1,9 @@
 import { CreateFileModal } from "@/components/modals/CreateFileModal";
 import { DeleteFileModal } from "@/components/modals/DeleteFileModal";
 import { DeleteFolderModal } from "@/components/modals/DeleteFolderModal";
+import { MoveFileModal } from "@/components/modals/MoveFileModal";
 import { RenameFileModal } from "@/components/modals/RenameFileModal";
 import { RenameFolderModal } from "@/components/modals/RenameFolderModal";
-import { MoveFileModal } from "@/components/modals/MoveFileModal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useDocumentStore } from "@/hooks/useDocumentStore";
+import { folderService } from "@/services/folder.service";
 import type { File, FileType, Folder as FolderType } from "@/types/document";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -28,9 +29,8 @@ import {
   Move,
   Plus,
 } from "lucide-react";
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { folderService } from "@/services/folder.service";
 
 interface FolderItemProps {
   folder: FolderType;
@@ -58,11 +58,14 @@ export const FolderItem: React.FC<FolderItemProps> = ({
   const [isExpanded, setIsExpanded] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [showRenameFileModal, setShowRenameFileModal] = useState(false);
-  const [showDeleteFileModal, setShowDeleteFileModal] = useState(false);  
+  const [showDeleteFileModal, setShowDeleteFileModal] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
-  const [selectedFileForMove, setSelectedFileForMove] = useState<File | null>(null);
+  const [selectedFileForMove, setSelectedFileForMove] = useState<File | null>(
+    null
+  );
   const [showMoveFileModal, setShowMoveFileModal] = useState(false);
-  const [folderForCreateFile, setFolderForCreateFile] = useState<FolderType | null>(null);
+  const [folderForCreateFile, setFolderForCreateFile] =
+    useState<FolderType | null>(null);
   const [renameFolder, setRenameFolder] = useState<FolderType | null>(null);
   const [deleteFolder2, setDeleteFolder2] = useState<FolderType | null>(null);
 
@@ -91,7 +94,7 @@ export const FolderItem: React.FC<FolderItemProps> = ({
 
   // Appliquer le tri
   folderFiles.sort((a, b) => {
-    let aValue: any, bValue: any;
+    let aValue: string | number, bValue: string | number;
 
     switch (sortBy) {
       case "name":
@@ -177,9 +180,9 @@ export const FolderItem: React.FC<FolderItemProps> = ({
   };
 
   const handleConfirmRename = async (oldname: string, newname: string) => {
-    try{
+    try {
       // Mise à jour optimiste dans le store
-      const folderToUpdate = folders.find(f => f.name === oldname);
+      const folderToUpdate = folders.find((f) => f.name === oldname);
       if (folderToUpdate) {
         updateFolder(folderToUpdate.id, { name: newname });
       }
@@ -187,8 +190,7 @@ export const FolderItem: React.FC<FolderItemProps> = ({
       await folderService.updateFolder({ oldname, newname });
       await loadFolders();
       setRenameFolder(null);
-    }
-    catch (err: unknown){
+    } catch (err: unknown) {
       // En cas d'erreur, recharger pour restaurer l'état correct
       await loadFolders();
       console.error("Erreur lors de la mise à jour d'un dossier:", err);
@@ -199,10 +201,10 @@ export const FolderItem: React.FC<FolderItemProps> = ({
     setDeleteFolder2(folder);
   };
 
-  const handleConfirmDelete =  async (name: string) => {
-    try{
+  const handleConfirmDelete = async (name: string) => {
+    try {
       // Mise à jour optimiste dans le store
-      const folderToDelete = folders.find(f => f.name === name);
+      const folderToDelete = folders.find((f) => f.name === name);
       if (folderToDelete) {
         deleteFolder(folderToDelete.id);
       }
@@ -211,8 +213,7 @@ export const FolderItem: React.FC<FolderItemProps> = ({
       // Recharger depuis l'API pour s'assurer que tout est synchronisé
       await loadFolders();
       setDeleteFolder2(null);
-    }
-    catch (err: unknown){
+    } catch (err: unknown) {
       // En cas d'erreur, recharger pour restaurer l'état correct
       await loadFolders();
       console.error("Erreur lors de la suppression d'un dossier:", err);
@@ -298,104 +299,106 @@ export const FolderItem: React.FC<FolderItemProps> = ({
   const folderCard = (folder: FolderType) => {
     return (
       <div key={folder.id}>
-          <Card
-            className={`p-3 hover:shadow-md transition-shadow ${
-              isDragOver ? "ring-2 ring-primary bg-primary/10" : ""
-            }`}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 min-w-0 flex-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleToggleExpanded}
-                  className="h-6 w-6 p-0"
-                >
-                  {isExpanded ? (
-                    <ChevronDown className="h-4 w-4" />
-                  ) : (
-                    <ChevronRight className="h-4 w-4" />
-                  )}
-                </Button>
+        <Card
+          className={`p-3 hover:shadow-md transition-shadow ${
+            isDragOver ? "ring-2 ring-primary bg-primary/10" : ""
+          }`}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleToggleExpanded}
+                className="h-6 w-6 p-0"
+              >
+                {isExpanded ? (
+                  <ChevronDown className="h-4 w-4" />
+                ) : (
+                  <ChevronRight className="h-4 w-4" />
+                )}
+              </Button>
 
-                <div
-                  className="flex items-center gap-2 min-w-0 flex-1 cursor-pointer"
-                  onClick={handleToggleExpanded}
-                >
-                  <Folder
-                    className="h-4 w-4 flex-shrink-0"
-                    style={{ color: folder.color || "#3b82f6" }}
-                  />
-                  <span className="font-medium text-sm text-foreground truncate">
-                    {folder.name}
-                  </span>
-                  <Badge variant="secondary" className="text-xs">
-                    {folderFiles.length}
-                  </Badge>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleCreateFile(folder)}
-                  className="h-6 w-6 p-0"
-                  title="Nouveau fichier"
-                >
-                  <Plus className="h-3 w-3" />
-                </Button>
-
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                      <MoreHorizontal className="h-3 w-3" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => handleOpenRenameModal(folder)}>
-                      Renommer
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => handleOpenDeleteModal(folder)}
-                      className="text-destructive"
-                    >
-                      Supprimer
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+              <div
+                className="flex items-center gap-2 min-w-0 flex-1 cursor-pointer"
+                onClick={handleToggleExpanded}
+              >
+                <Folder
+                  className="h-4 w-4 flex-shrink-0"
+                  style={{ color: folder.color || "#3b82f6" }}
+                />
+                <span className="font-medium text-sm text-foreground truncate">
+                  {folder.name}
+                </span>
+                <Badge variant="secondary" className="text-xs">
+                  {folderFiles.length}
+                </Badge>
               </div>
             </div>
-          </Card>
 
-          {/* Modales pour le dossier */}
-          <RenameFolderModal
-            isOpen={!!renameFolder}
-            onClose={() => setRenameFolder(null)}
-            onConfirm={handleConfirmRename}
-            currentName={renameFolder?.name || ""}
-          />
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleCreateFile(folder)}
+                className="h-6 w-6 p-0"
+                title="Nouveau fichier"
+              >
+                <Plus className="h-3 w-3" />
+              </Button>
 
-          <DeleteFolderModal
-            isOpen={!!deleteFolder2}
-            onClose={() => setDeleteFolder2(null)}
-            onConfirm={handleConfirmDelete}
-            folder={deleteFolder2}
-          />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                    <MoreHorizontal className="h-3 w-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onClick={() => handleOpenRenameModal(folder)}
+                  >
+                    Renommer
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => handleOpenDeleteModal(folder)}
+                    className="text-destructive"
+                  >
+                    Supprimer
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+        </Card>
 
-          {/* Modale de création de fichier */}
-          <CreateFileModal
-            isOpen={!!folderForCreateFile}
-            onClose={() => setFolderForCreateFile(null)}
-            onConfirm={handleConfirmCreateFile}
-            folderId={folderForCreateFile?.id || ""}
-          />
+        {/* Modales pour le dossier */}
+        <RenameFolderModal
+          isOpen={!!renameFolder}
+          onClose={() => setRenameFolder(null)}
+          onConfirm={handleConfirmRename}
+          currentName={renameFolder?.name || ""}
+        />
+
+        <DeleteFolderModal
+          isOpen={!!deleteFolder2}
+          onClose={() => setDeleteFolder2(null)}
+          onConfirm={handleConfirmDelete}
+          folder={deleteFolder2}
+        />
+
+        {/* Modale de création de fichier */}
+        <CreateFileModal
+          isOpen={!!folderForCreateFile}
+          onClose={() => setFolderForCreateFile(null)}
+          onConfirm={handleConfirmCreateFile}
+          folderId={folderForCreateFile?.id || ""}
+        />
       </div>
-    )
-  }
+    );
+  };
 
   return (
     <div className="space-y-1">
@@ -497,14 +500,10 @@ export const FolderItem: React.FC<FolderItemProps> = ({
               </div>
             </Card>
           ))}
-          {
-            folder.subFolders.map((subfolder) => {
-              return(
-                folderCard(subfolder)
-              )
-            })
-          }
-          {(folderFiles.length === 0 && folder.subFolders.length === 0) && (
+          {folder.subFolders.map((subfolder) => {
+            return folderCard(subfolder);
+          })}
+          {folderFiles.length === 0 && folder.subFolders.length === 0 && (
             <div className="p-2 text-xs text-muted-foreground text-center">
               Aucun fichier ou dossier dans ce dossier
             </div>
@@ -536,7 +535,7 @@ export const FolderItem: React.FC<FolderItemProps> = ({
           />
         </>
       )}
-      
+
       {/* Modal de déplacement de fichier */}
       <MoveFileModal
         isOpen={showMoveFileModal}
