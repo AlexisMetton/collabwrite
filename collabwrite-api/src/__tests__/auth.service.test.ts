@@ -1,14 +1,14 @@
 import { authService } from '../services/auth.service';
 import * as jwtUtil from '../utils/jwt.util';
 
-jest.mock('../config/db.config', () => ({
+jest.mock('../config/db.config.js', () => ({
   pool: {
     query: jest.fn(),
   },
 }));
 
 describe('auth.service refreshAccessToken', () => {
-  const { pool } = jest.requireMock('../config/db.config');
+  const { pool } = jest.requireMock('../config/db.config.js');
 
   beforeEach(() => {
     jest.resetAllMocks();

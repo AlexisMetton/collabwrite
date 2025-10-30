@@ -1,5 +1,5 @@
-import { pool } from '../config/db.config';
-import { verifyRefreshToken, generateAccessToken, generateRefreshToken } from '../utils/jwt.util';
+import { pool } from '../config/db.config.js';
+import { verifyRefreshToken, generateAccessToken, generateRefreshToken } from '../utils/jwt.util.js';
 
 export const authService = {
   async createSession(userId: string, refreshToken: string, ipAddress?: string, userAgent?: string) {

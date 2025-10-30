@@ -42,4 +42,12 @@
     "moduleDetection": "force",
     "skipLibCheck": true,
   }
+  ,
+  "include": [
+    "server.ts",
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "src/__tests__/**"
+  ]
 }
