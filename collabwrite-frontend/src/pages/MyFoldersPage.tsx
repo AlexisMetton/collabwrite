@@ -176,6 +176,8 @@ export const MyFoldersPage: React.FC = () => {
         listFiles: listFiles
       });
 
+      if(!folder.subFolders) continue;
+
       for(const subFolder of folder.subFolders){
         listFiles = files.filter((f) => f.folderId == subFolder.id)
         organiseFiles.push({

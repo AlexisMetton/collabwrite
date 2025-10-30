@@ -66,20 +66,44 @@ export const FolderItem: React.FC<FolderItemProps> = ({
   const [renameFolder, setRenameFolder] = useState<FolderType | null>(null);
   const [deleteFolder2, setDeleteFolder2] = useState<FolderType | null>(null);
 
+  const organiseFilesInFolder = (folders: FolderType[], files: File[]) => {
+    const organiseFiles = [];
+    for(const folder of folders){
+      let listFiles = files.filter((f) => f.folderId == folder.id)
+      organiseFiles.push({
+        folderId: folder.id,
+        listFiles: listFiles
+      });
+  
+      if(!folder.subFolders) continue;
+
+      for(const subFolder of folder.subFolders){
+        listFiles = files.filter((f) => f.folderId == subFolder.id)
+        organiseFiles.push({
+          folderId: subFolder.id,
+          listFiles: listFiles
+        });
+      }
+    }
+  
+    return organiseFiles;
+  }
+  const organiseFiles = organiseFilesInFolder(folders, files);
+
   // Récupérer les fichiers de ce dossier depuis le store
-  let folderFiles = files.filter((file) => file.folderId === folder.id);
+  let folderFiles = organiseFiles.find((file) => file.folderId === folder.id)?.listFiles;
 
   // Appliquer le filtre de type
   if (fileTypeFilter !== "all") {
     folderFiles =
       fileTypeFilter === "image"
-        ? folderFiles.filter((file) => file.fileType === "png")
-        : folderFiles.filter((file) => file.fileType === fileTypeFilter);
+        ? folderFiles?.filter((file) => file.fileType === "png")
+        : folderFiles?.filter((file) => file.fileType === fileTypeFilter);
   }
 
   // Filtrer selon la recherche
   if (searchQuery) {
-    folderFiles = folderFiles.filter(
+    folderFiles = folderFiles?.filter(
       (file) =>
         file.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         file.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -90,7 +114,7 @@ export const FolderItem: React.FC<FolderItemProps> = ({
   }
 
   // Appliquer le tri
-  folderFiles.sort((a, b) => {
+  folderFiles?.sort((a, b) => {
     let aValue: any, bValue: any;
 
     switch (sortBy) {
@@ -296,6 +320,8 @@ export const FolderItem: React.FC<FolderItemProps> = ({
   };
 
   const folderCard = (folder: FolderType) => {
+    const folderFilesSubFolder = organiseFiles.find((f) => f.folderId == folder.id)?.listFiles;
+
     return (
       <div key={folder.id}>
           <Card
@@ -333,7 +359,7 @@ export const FolderItem: React.FC<FolderItemProps> = ({
                     {folder.name}
                   </span>
                   <Badge variant="secondary" className="text-xs">
-                    {folderFiles.length}
+                    {folderFilesSubFolder?.length}
                   </Badge>
                 </div>
               </div>
@@ -393,18 +419,11 @@ export const FolderItem: React.FC<FolderItemProps> = ({
             onConfirm={handleConfirmCreateFile}
             folderId={folderForCreateFile?.id || ""}
           />
-      </div>
-    )
-  }
 
-  return (
-    <div className="space-y-1">
-      {/* En-tête du dossier */}
-      {folderCard(folder)}
       {/* Fichiers du dossier */}
       {isExpanded && (
         <div className="ml-6 space-y-1">
-          {folderFiles.map((file) => (
+          {folderFilesSubFolder?.map((file) => (
             <Card
               key={file.id}
               draggable
@@ -497,14 +516,29 @@ export const FolderItem: React.FC<FolderItemProps> = ({
               </div>
             </Card>
           ))}
+        </div>
+      )}
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-1">
+      {/* En-tête du dossier */}
+      {folderCard(folder)}
+      {/* Fichiers du dossier */}
+      {isExpanded && (
+        <div className="ml-6 space-y-1">
           {
             folder.subFolders.map((subfolder) => {
               return(
-                folderCard(subfolder)
+                <>
+                  {folderCard(subfolder)}
+                </>
               )
             })
           }
-          {(folderFiles.length === 0 && folder.subFolders.length === 0) && (
+          {(folderFiles?.length === 0 && folder.subFolders.length === 0) && (
             <div className="p-2 text-xs text-muted-foreground text-center">
               Aucun fichier ou dossier dans ce dossier
             </div>
