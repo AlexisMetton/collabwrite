@@ -42,6 +42,32 @@ export const MoveFileModal: React.FC<MoveFileModalProps> = ({
 
   if (!file) return null;
 
+  const flattenFolders = (folders: FolderType[]) => {
+    let result: FolderType[] = [];
+    for(const folder of folders){
+      let updatedDate = folder.updatedAt;
+      if(!updatedDate){
+        if(typeof folder.updated_at === "string"){
+          updatedDate = new Date(folder.updated_at);
+        }
+      }
+      const normalizedFolder = {
+        ...folder,
+        updatedAt: typeof folder.updatedAt === "string"
+          ? new Date(updatedDate)
+          : updatedDate
+      }
+      result.push(normalizedFolder);
+      if(folder.subFolders && folder.subFolders.length > 0){
+        result = result.concat(flattenFolders(folder.subFolders));
+      }
+    }
+  
+    return result;
+  }
+
+  const allFolders = flattenFolders(folders);
+
   // Compter les fichiers par dossier pour afficher le nombre
   const getFolderFileCount = (folderId: string | null) => {
     return files.filter(f => f.folderId === folderId).length;
@@ -82,7 +108,7 @@ export const MoveFileModal: React.FC<MoveFileModalProps> = ({
           </Card>
 
           {/* Liste des dossiers */}
-          {folders.map((folder) => (
+          {allFolders.map((folder) => (
             <Card
               key={folder.id}
               className={`p-3 cursor-pointer transition-all hover:shadow-md ${
