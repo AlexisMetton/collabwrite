@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { DocumentSkeleton } from "@/components/ui/LoadingSkeleton";
 import { useDocumentStore } from "@/hooks/useDocumentStore";
-import type { File, FileType } from "@/types/document";
+import type { File, FileType, Folder } from "@/types/document";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Calendar, Edit, FileText, FileType as FileTypeIcon, Folder as FolderIcon, Image as ImageIcon, Move, Plus, Trash2, User, ChevronRight, ChevronDown } from "lucide-react";
@@ -129,7 +129,33 @@ export const DashboardPage: React.FC = () => {
     .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
     .slice(0, 5);
 
-  const recentFolders = folders
+  const flattenFolders = (folders: Folder[]) => {
+    let result: Folder[] = [];
+    for(const folder of folders){
+      let updatedDate = folder.updatedAt;
+      if(!updatedDate){
+        if(typeof folder.updated_at === "string"){
+          updatedDate = new Date(folder.updated_at);
+        }
+      }
+      const normalizedFolder = {
+        ...folder,
+        updatedAt: typeof folder.updatedAt === "string"
+          ? new Date(updatedDate)
+          : updatedDate
+      }
+      result.push(normalizedFolder);
+      if(folder.subFolders && folder.subFolders.length > 0){
+        result = result.concat(flattenFolders(folder.subFolders));
+      }
+    }
+
+    return result;
+  }
+
+  const allFolders = flattenFolders(folders);
+
+  const recentFolders = allFolders
     .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
     .slice(0, 5);
 
