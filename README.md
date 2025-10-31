@@ -21,7 +21,7 @@ Créez vos fichiers `.env` à partir des exemples fournis.
 Copiez `collabwrite-api/env.example` vers `collabwrite-api/.env` puis ajustez :
 - `DATABASE_URL` ou les variables `POSTGRES_*` selon votre environnement (Docker vs local)
 - `JWT_SECRET` et `JWT_REFRESH_SECRET` (valeurs longues et aléatoires en production)
-- `FRONTEND_URL` et `CORS_ORIGIN` (par défaut `http://localhost:5173`)
+- `FRONTEND_URL` (par défaut `http://localhost:5173`)
 - Bloc SMTP (emails) : `NODE_MAILER_HOST/PORT/SECURE/USER/PASSWORD` et `GMAIL_USER`
 
 Exemple Gmail (mot de passe d’application requis). Vous pouvez voir le tutoriel dans le fichier PDF `tuto_cle_securite_gmail.pdf` à la racine du projet :
