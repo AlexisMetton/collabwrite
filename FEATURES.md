@@ -11,10 +11,10 @@ Légende: ✅ disponible
 - ✅ 2FA (TOTP) activation/désactivation
 
 ### Documents
-- ✅ Création de document
-- ✅ Lecture/affichage d’un document
-- ✅ Mise à jour/édition d’un document
-- ✅ Suppression de document
+- ✅ Création de document texte, image et PDF
+- ✅ Lecture/affichage d’un document texte, image et PDF
+- ✅ Mise à jour/édition d’un document texte, image et PDF
+- ✅ Suppression de document texte, image et PDF
 - ✅ Enregistrement automatique tous les x secondes
 - ✅ Co‑édition temps réel texte (OT/CRDT) avec modification simultané pour le travail collaboratif + Cursor visible
 
