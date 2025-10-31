@@ -1,38 +1,47 @@
-import { Link, useNavigate } from "react-router-dom"
-import { LogIn, UserPlus, Menu, LogOut, User } from "lucide-react"
+import { Link } from "react-router-dom"
+import { LogIn, UserPlus, Menu, User, FileText, Folder, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
 import { useAuth } from "@/contexts/AuthContext"
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const { user, logout } = useAuth()
-  const navigate = useNavigate()
-
-  const handleLogout = async () => {
-    await logout()
-    navigate("/")
-  }
+  const { user } = useAuth()
 
   return (
     <header className="border-b bg-background sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <img 
-              src="/logo_collabwrite.png" 
-              alt="CollabWrite Logo" 
+            <img
+              src="/logo_collabwrite.png"
+              alt="CollabWrite Logo"
               className="h-8 w-auto sm:h-12"
             />
           </Link>
-          
+
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-4">
-            {/*<Link to="/" className="text-sm font-medium hover:text-primary transition-colors">
-              Accueil
-            </Link>*/}
+            {user && (
+              <>
+                <Link to="/my-documents" className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1">
+                  <FileText className="h-4 w-4" />
+                  Mes documents
+                </Link>
+                <Link to="/my-folders" className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1">
+                  <Folder className="h-4 w-4" />
+                  Mes dossiers
+                </Link>
+              </>
+            )}
+            {user && user.role === 'admin' && (
+              <Link to="/admin" className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1">
+                <Users className="h-4 w-4" />
+                Gestion des utilisateurs
+              </Link>
+            )}
           </nav>
-          
+
           {/* Desktop Buttons */}
           <div className="hidden sm:flex items-center gap-2">
                          {user ? (
@@ -63,7 +72,7 @@ export function Header() {
           </div>
 
           {/* Mobile Menu Button */}
-          <button 
+          <button
             className="sm:hidden"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label="Toggle menu"
@@ -79,6 +88,30 @@ export function Header() {
               Accueil
             </Link>*/}
             <div className="flex flex-col gap-2 px-4">
+                {user && (
+                  <>
+                    <Link to="/my-documents" onClick={() => setIsMenuOpen(false)}>
+                      <Button variant="ghost" size="sm" className="w-full gap-2 justify-start">
+                        <FileText className="h-4 w-4" />
+                        Mes documents
+                      </Button>
+                    </Link>
+                    <Link to="/my-folders" onClick={() => setIsMenuOpen(false)}>
+                      <Button variant="ghost" size="sm" className="w-full gap-2 justify-start">
+                        <Folder className="h-4 w-4" />
+                        Mes dossiers
+                      </Button>
+                    </Link>
+                  </>
+                )}
+                {user && user.role === 'admin' && (
+                  <Link to="/admin" onClick={() => setIsMenuOpen(false)}>
+                    <Button variant="ghost" size="sm" className="w-full gap-2 justify-start">
+                      <Users className="h-4 w-4" />
+                      Gestion des utilisateurs
+                    </Button>
+                  </Link>
+                )}
                 {user ? (
                  <>
                    <Link to="/profile">

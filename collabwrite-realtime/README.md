@@ -56,15 +56,8 @@ npm test
 
 ```
 src/
-├── controllers/    # Contrôleurs pour gérer les événements WebSocket
-├── services/        # Services de gestion des connexions et synchronisation
-├── middleware/      # Middlewares pour l'authentification WebSocket
-├── events/          # Gestionnaires d'événements Socket.IO
-├── types/           # Définitions TypeScript pour les événements
-├── utils/           # Fonctions utilitaires
-├── config/          # Configuration du serveur WebSocket
-├── app.ts           # Configuration Express et Socket.IO
-└── server.ts        # Point d'entrée du serveur
+├── sockets/    # Gestion des événements et logique WebSocket
+server.ts       # Point d'entrée du serveur
 ```
 
 ## 🔧 Configuration
@@ -128,11 +121,7 @@ Créez un fichier `.env` à la racine du dossier realtime :
 
 ```env
 PORT=3001
-NODE_ENV=development
-REDIS_URL=redis://localhost:6379
-JWT_SECRET=your-secret-key
-CORS_ORIGIN=http://localhost:5173
-API_URL=http://localhost:3000
+FRONTEND_URL=http://localhost:5173
 ```
 
 ## 🔄 Synchronisation en temps réel
@@ -150,52 +139,6 @@ Frontend ←→ Realtime Service ←→ API Service
     ↓              ↓                ↓
 WebSocket      Socket.IO         REST API
 ```
-
-## 🚀 Déploiement
-
-### Avec PM2
-```bash
-npm install -g pm2
-npm run build
-pm2 start dist/server.js --name collabwrite-realtime
-```
-
-### Avec Docker
-```bash
-docker build -t collabwrite-realtime .
-docker run -p 3001:3001 collabwrite-realtime
-```
-
-### Scaling horizontal
-Pour gérer plusieurs instances, utilisez Redis comme adaptateur :
-```bash
-npm install @socket.io/redis-adapter redis
-```
-
-## 🧪 Tests
-
-### Tests unitaires
-```bash
-npm run test
-```
-
-### Tests d'intégration WebSocket
-```bash
-npm run test:integration
-```
-
-## 📊 Monitoring
-
-### Métriques importantes
-- Nombre de connexions actives
-- Latence des messages
-- Taux d'erreur des événements
-- Utilisation mémoire
-
-### Outils recommandés
-- **Socket.IO Admin UI** pour le monitoring
-- **Redis Commander** pour surveiller le cache
-- **PM2** pour le monitoring des processus
 
 ## 🤝 Contribution
 

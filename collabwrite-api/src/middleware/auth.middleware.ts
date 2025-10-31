@@ -4,6 +4,11 @@ import { verifyAccessToken } from '../utils/jwt.util.js';
 export interface AuthRequest extends Request {
   userId?: string;
   email?: string;
+  user?: {
+    id: string;
+    email: string;
+    role: string;
+  };
 }
 
 export function authenticateToken(req: AuthRequest, res: Response, next: NextFunction) {
@@ -19,6 +24,11 @@ export function authenticateToken(req: AuthRequest, res: Response, next: NextFun
     const decoded = verifyAccessToken(token);
     req.userId = decoded.userId;
     req.email = decoded.email;
+    req.user = {
+      id: decoded.userId,
+      email: decoded.email,
+      role: decoded.role
+    };
     next();
   } catch (error) {
     return res.status(403).json({ error: 'Token invalide ou expiré' });
