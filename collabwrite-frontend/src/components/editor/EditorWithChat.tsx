@@ -28,10 +28,10 @@ export const EditorWithChat: React.FC<EditorWithChatProps> = React.memo(({
   const [isChatOpen, setIsChatOpen] = useState(false);
 
   return (
-    <div className="flex h-full w-full gap-4">
+    <div className="flex flex-wrap h-full w-full gap-4">
       {/* Éditeur principal */}
       <div
-        className={`flex-1 transition-all duration-300 ${
+        className={`flex-1 min-w-[300px] transition-all duration-300 ${
           isChatOpen ? "mr-0" : ""
         }`}
       >
@@ -60,7 +60,7 @@ export const EditorWithChat: React.FC<EditorWithChatProps> = React.memo(({
 
       {/* Panneau de chat */}
       {isChatOpen && (
-        <div className="w-96 flex-shrink-0 animate-in slide-in-from-right">
+        <div className="w-full lg:w-96 flex-shrink-0 animate-in slide-in-from-right">
           <div className="h-[calc(100vh-200px)] max-h-[800px] rounded-lg border bg-card shadow-lg">
             <DocumentChat
               documentId={documentId}
