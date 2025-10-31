@@ -38,10 +38,10 @@ Impact:
 - React: écosystème et recrutement faciles, composants réutilisables.
 - Vite: démarrage/build ultra-rapides, DX moderne.
 - Tailwind + shadcn/ui: productivité UI, design consistant, theming simple.
-- Éditeur: CKEditor (clé de licence possible) pour une expérience riche et stable.
+- Éditeur: TipTap pour une expérience riche et stable.
 
 Impact:
-- Time-to-market rapide, maintenance aisée, UI cohérente.
+- Développement plus rapide, maintenance facilitée, UI cohérente.
 
 ### 6) Temps réel — Socket.io + WebRTC (service dédié)
 - Socket.io: fiabilité multi-transports (websocket/polling), simplicité côté client.
@@ -65,11 +65,11 @@ Impact:
 
 ---
 
-### 10) Choix organisationnels (proposés)
+### 10) Choix organisationnels
 
 - Gestion de projet
   - Fonctionnement en itérations courtes de 2–3h : en début d'itération, on définit ensemble les tâches à réaliser.
-  - Toute l’équipe travaille sur dess branches prédéfinies correspondant à l’itération en cours.
+  - Toute l’équipe travaille sur des branches prédéfinies correspondant à l’itération en cours.
   - À la fin de l’itération, on fait un point d’avancement puis on merge tout ce qui a été développé vers la branche `develop`.
   - On vérifie que la branche `develop` fonctionne correctement, puis on recommence ce cycle pour l’itération suivante.
 
@@ -104,3 +104,20 @@ Impact:
 - Données & intégrité
   - Postgres comme source de vérité (documents, versions, permissions, sessions).
   - Verrous logiques au niveau service (ex: permissions d’édition, invitations).
+
+### 12) Intégration CI/CD
+
+- **GitHub Actions** pour l’intégration continue
+  - Tests automatiques sur les push vers `main`, `dev`
+  - Tests également déclenchés sur les pull requests vers `main` et `dev`
+  - Workflow focalisé sur l’API (`collabwrite-api`) pour l’instant
+
+- **Tests couverts**
+  - Utils (JWT, bcrypt, TOTP)
+  - Middleware d’authentification
+  - Services (auth.service avec mocks DB)
+
+Impact:
+- Réduction du risque de casser la branche principale
+- Amélioration de la confiance dans les merges
+- Base solide pour étendre aux autres briques (frontend, realtime)

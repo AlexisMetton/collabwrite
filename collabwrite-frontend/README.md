@@ -70,7 +70,7 @@ src/
 
 ## 🎨 Styling
 
-Le projet utilise Tailwind CSS pour le styling. Les classes Tailwind peuvent être utilisées directement dans les composants JSX.
+Le projet utilise Tailwind CSS et ShadCN pour le styling. Les classes Tailwind peuvent être utilisées directement dans les composants JSX.
 
 Exemple :
 ```tsx

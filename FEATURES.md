@@ -16,7 +16,7 @@ Légende: ✅ disponible
 - ✅ Mise à jour/édition d’un document
 - ✅ Suppression de document
 - ✅ Enregistrement automatique tous les x secondes
-- ✅ Co‑édition temps réel texte (OT/CRDT)
+- ✅ Co‑édition temps réel texte (OT/CRDT) avec modification simultané pour le travail collaboratif + Cursor visible
 
 ### Dossiers
 - ✅ Création de dossier et sous dossiers

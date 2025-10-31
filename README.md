@@ -24,7 +24,7 @@ Copiez `collabwrite-api/env.example` vers `collabwrite-api/.env` puis ajustez 
 - `FRONTEND_URL` et `CORS_ORIGIN` (par défaut `http://localhost:5173`)
 - Bloc SMTP (emails) : `NODE_MAILER_HOST/PORT/SECURE/USER/PASSWORD` et `GMAIL_USER`
 
-Exemple Gmail (mot de passe d’application requis) :
+Exemple Gmail (mot de passe d’application requis). Vous pouvez voir le tutoriel dans le fichier PDF `tuto_cle_securite_gmail.pdf` à la racine du projet :
 ```env
 NODE_MAILER_HOST=smtp.gmail.com
 NODE_MAILER_PORT=465
@@ -40,13 +40,12 @@ Astuce: vérifiez votre config SMTP via l’endpoint protégé `GET /api/invite/
 Copiez `collabwrite-frontend/env.example` vers `collabwrite-frontend/.env` puis ajustez :
 ```env
 VITE_API_URL=http://localhost:4000/api
-VITE_CKEDITOR_LICENSE_KEY=
+VITE_REALTIME_URL=http://localhost:3001
 ```
-`VITE_CKEDITOR_LICENSE_KEY` : renseignez votre clé.
 
 ---
 
-## 2) Démarrage rapide avec Docker (recommandé)
+## 2) Démarrage rapide avec Docker pour API (recommandé)
 
 Dans `collabwrite-api/`, lancez :
 ```bash
@@ -94,7 +93,7 @@ Assurez-vous que `VITE_API_URL` pointe vers l’API (par défaut `http://localho
 
 ## 4) Emails d’invitation
 
-L’API utilise Nodemailer. Renseignez correctement les variables SMTP dans `collabwrite-api/.env`.
+L’API utilise Nodemailer. Renseignez correctement les variables SMTP dans `collabwrite-api/.env`. Vous pouvez voir le tutoriel dans le fichier PDF `tuto_cle_securite_gmail.pdf` à la racine du projet
 - Gmail : utilisez un mot de passe d’application (pas le mot de passe du compte)
 - `NODE_MAILER_SECURE=true` avec le port 465 (SSL)
 - `NODE_MAILER_SECURE=false` avec le port 587 (STARTTLS)
@@ -113,18 +112,7 @@ Modifiez-les en production.
 
 ---
 
-## 6) Dépannage rapide
-
-- Erreur 500 lors de l’envoi d’email + logs `EAUTH`/`Missing credentials for "PLAIN"` :
-  - Vérifiez `NODE_MAILER_USER` et `NODE_MAILER_PASSWORD`
-  - Vérifiez `NODE_MAILER_HOST/PORT/SECURE`
-  - Alignez `GMAIL_USER` avec l’expéditeur autorisé
-- CORS : assurez-vous que `FRONTEND_URL`/`CORS_ORIGIN` correspondent à l’URL du frontend
-- Après modification d’un `.env`, redémarrez le service concerné
-
----
-
-## 7) Scripts utiles
+## 6) Scripts utiles
 
 API (`collabwrite-api`) :
 - `npm run dev` — mode dev (ts-node/nodemon)
@@ -140,7 +128,3 @@ Realtime (`collabwrite-realtime`) :
 - `npm run dev` — mode dev
 - `npm run build` — build de production
 - `npm start` — mode production
-
----
-
-Bon développement !

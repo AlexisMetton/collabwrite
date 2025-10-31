@@ -32,6 +32,7 @@ http://localhost:3000
 
 ```
 src/
+├── __tests__/      # fichiers de test pour vérifier le bon fonctionnement de l'application lors des push et pull requests
 ├── controllers/    # Contrôleurs pour gérer les requêtes
 ├── models/         # Modèles de données
 ├── routes/         # Définition des routes API
