@@ -82,6 +82,7 @@ npm run dev
 
 3) Realtime
 ```bash
+# Démarrer seulement après que les deux autres parties soient prêtes et initialisées
 cd collabwrite-realtime
 npm install
 npm run dev
