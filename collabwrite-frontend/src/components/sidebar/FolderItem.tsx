@@ -295,32 +295,6 @@ export const FolderItem: React.FC<FolderItemProps> = ({
     }
   };
 
-  // Drag and drop handlers
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    e.dataTransfer.dropEffect = "move";
-    setIsDragOver(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragOver(false);
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragOver(false);
-
-    const fileId = e.dataTransfer.getData("fileId");
-    if (fileId) {
-      // Déplacer le fichier dans ce dossier
-      updateFile(fileId, { folderId: folder.id });
-    }
-  };
-
   // Drag and drop handlers pour les fichiers
   const handleFileDragStart = (e: React.DragEvent, file: File) => {
     e.stopPropagation();
@@ -329,6 +303,32 @@ export const FolderItem: React.FC<FolderItemProps> = ({
   };
 
   const folderCard = (folder: FolderType) => {
+      // Drag and drop handlers
+    const handleDragOver = (e: React.DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      e.dataTransfer.dropEffect = "move";
+      setIsDragOver(true);
+    };
+
+    const handleDragLeave = (e: React.DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDragOver(false);
+    };
+
+    const handleDrop = (e: React.DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDragOver(false);
+
+      const fileId = e.dataTransfer.getData("fileId");
+      if (fileId) {
+        // Déplacer le fichier dans ce dossier
+        updateFile(fileId, { folderId: folder.id });
+      }
+    };
+
     const folderFilesSubFolder = organiseFiles.find((f) => f.folderId == folder.id)?.listFiles;
 
     return (
