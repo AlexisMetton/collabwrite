@@ -135,7 +135,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = React.memo(({
     <Card className={`p-4 ${className}`}>
       <div className="space-y-4">
         {/* Barre d'outils personnalisée */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex flex-wrap items-center gap-1 border rounded-lg p-2 bg-muted/50">
             {/* Historique */}
             <Button

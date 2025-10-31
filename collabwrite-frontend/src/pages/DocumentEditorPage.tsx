@@ -179,40 +179,41 @@ export const DocumentEditorPage: React.FC = () => {
   }
 
   return (
-    <div className="flex-1 flex flex-col h-full p-6 space-y-6">
+    <div className="flex-1 flex flex-col h-full p-3 sm:p-4 md:p-6 space-y-3 sm:space-y-4 md:space-y-6">
       {/* En-tête */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="outline" size="sm" onClick={handleBack}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Retour
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+        <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
+          <Button variant="outline" size="sm" onClick={handleBack} className="flex-shrink-0">
+            <ArrowLeft className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Retour</span>
           </Button>
-          <div className="flex items-center gap-2">
-            <FileText className="h-5 w-5 text-muted-foreground" />
-            <h1 className="text-xl font-semibold">Éditeur de document</h1>
+          <div className="flex items-center gap-2 min-w-0">
+            <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground flex-shrink-0" />
+            <h1 className="text-base sm:text-lg md:text-xl font-semibold truncate">Éditeur de document</h1>
           </div>
           <ActiveUsers users={connectedUsers} currentUserId={user?.id} />
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-3 md:gap-4 flex-wrap">
           {currentFile.isDirty && (
-            <span className="text-sm text-orange-500">• Non sauvegardé</span>
+            <span className="text-xs sm:text-sm text-orange-500 flex-shrink-0 whitespace-nowrap">• Non sauvegardé</span>
           )}
           <Button
             variant="outline"
             size="sm"
             onClick={handleDelete}
-            className="text-destructive hover:text-destructive"
+            className="text-destructive hover:text-destructive flex-shrink-0"
           >
-            <Trash2 className="h-4 w-4 mr-2" />
-            Supprimer
+            <Trash2 className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Supprimer</span>
           </Button>
-          <Button onClick={handleSave} disabled={isSaving} className="gap-2">
+          <Button onClick={handleSave} disabled={isSaving} className="gap-2 flex-shrink-0">
             <Save className="h-4 w-4" />
-            {isSaving ? "Sauvegarde..." : "Sauvegarder"}
+            <span className="hidden sm:inline">{isSaving ? "Sauvegarde..." : "Sauvegarder"}</span>
+            <span className="sm:hidden">{isSaving ? "..." : "Sauver"}</span>
           </Button>
 
-          <div className="flex items-center gap-2 border-l pl-4">
+          <div className="flex items-center gap-2 border-l pl-2 sm:pl-4 flex-shrink-0">
             {!isCallActive ? (
               <AudioCallButton
                 onStartCall={startCall}
@@ -249,15 +250,15 @@ export const DocumentEditorPage: React.FC = () => {
       )}
 
       {/* Métadonnées du document */}
-      <Card className="p-4">
+      <Card className="p-3 sm:p-4">
         <div className="space-y-2">
-          <Label htmlFor="document-title">Titre du document</Label>
+          <Label htmlFor="document-title" className="text-sm sm:text-base">Titre du document</Label>
           <Input
             id="document-title"
             value={documentTitle}
             onChange={(e) => handleTitleChange(e.target.value)}
             placeholder="Entrez le titre du document..."
-            className="text-lg font-medium"
+            className="text-sm sm:text-base md:text-lg font-medium"
           />
         </div>
       </Card>

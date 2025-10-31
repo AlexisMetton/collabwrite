@@ -195,28 +195,28 @@ export const CreateFileModal: React.FC<CreateFileModalProps> = ({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={handleClose}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="max-w-[95vw] sm:max-w-[600px] mx-2 sm:mx-4">
           {step === "type" ? (
             <>
               <DialogHeader>
-                <DialogTitle>Créer un nouveau fichier ou un nouveau dossier</DialogTitle>
-                <DialogDescription>
+                <DialogTitle className="text-base sm:text-lg">Créer un nouveau fichier ou un nouveau dossier</DialogTitle>
+                <DialogDescription className="text-xs sm:text-sm">
                   Choisissez le type de fichier que vous souhaitez créer.
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="grid grid-cols-4 gap-4 py-6">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 py-4 sm:py-6">
                 <Card
-                  className="p-6 cursor-pointer hover:shadow-lg transition-all hover:scale-105 hover:border-primary"
+                  className="p-3 sm:p-4 md:p-6 cursor-pointer hover:shadow-lg transition-all hover:scale-105 hover:border-primary"
                   onClick={() => handleTypeSelect("txt")}
                 >
-                  <div className="flex flex-col items-center gap-3 text-center">
-                    <div className="h-16 w-16 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                      <FileText className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                  <div className="flex flex-col items-center gap-2 sm:gap-3 text-center">
+                    <div className="h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                      <FileText className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-blue-600 dark:text-blue-400" />
                     </div>
                     <div>
-                      <h3 className="font-semibold">Texte</h3>
-                      <p className="text-xs text-muted-foreground mt-1">
+                      <h3 className="font-semibold text-xs sm:text-sm md:text-base">Texte</h3>
+                      <p className="text-xs text-muted-foreground mt-1 hidden sm:block">
                         Document éditable
                       </p>
                     </div>
@@ -224,16 +224,16 @@ export const CreateFileModal: React.FC<CreateFileModalProps> = ({
                 </Card>
 
                 <Card
-                  className="p-6 cursor-pointer hover:shadow-lg transition-all hover:scale-105 hover:border-primary"
+                  className="p-3 sm:p-4 md:p-6 cursor-pointer hover:shadow-lg transition-all hover:scale-105 hover:border-primary"
                   onClick={() => handleTypeSelect("png")}
                 >
-                  <div className="flex flex-col items-center gap-3 text-center">
-                    <div className="h-16 w-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                      <Image className="h-8 w-8 text-green-600 dark:text-green-400" />
+                  <div className="flex flex-col items-center gap-2 sm:gap-3 text-center">
+                    <div className="h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                      <Image className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-green-600 dark:text-green-400" />
                     </div>
                     <div>
-                      <h3 className="font-semibold">Image</h3>
-                      <p className="text-xs text-muted-foreground mt-1">
+                      <h3 className="font-semibold text-xs sm:text-sm md:text-base">Image</h3>
+                      <p className="text-xs text-muted-foreground mt-1 hidden sm:block">
                         PNG, JPG, GIF
                       </p>
                     </div>
@@ -241,16 +241,16 @@ export const CreateFileModal: React.FC<CreateFileModalProps> = ({
                 </Card>
 
                 <Card
-                  className="p-6 cursor-pointer hover:shadow-lg transition-all hover:scale-105 hover:border-primary"
+                  className="p-3 sm:p-4 md:p-6 cursor-pointer hover:shadow-lg transition-all hover:scale-105 hover:border-primary"
                   onClick={() => handleTypeSelect("pdf")}
                 >
-                  <div className="flex flex-col items-center gap-3 text-center">
-                    <div className="h-16 w-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                      <FileTypeIcon className="h-8 w-8 text-red-600 dark:text-red-400" />
+                  <div className="flex flex-col items-center gap-2 sm:gap-3 text-center">
+                    <div className="h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                      <FileTypeIcon className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-red-600 dark:text-red-400" />
                     </div>
                     <div>
-                      <h3 className="font-semibold">PDF</h3>
-                      <p className="text-xs text-muted-foreground mt-1">
+                      <h3 className="font-semibold text-xs sm:text-sm md:text-base">PDF</h3>
+                      <p className="text-xs text-muted-foreground mt-1 hidden sm:block">
                         Document PDF
                       </p>
                     </div>
@@ -258,16 +258,16 @@ export const CreateFileModal: React.FC<CreateFileModalProps> = ({
                 </Card>
 
                 <Card
-                  className="p-6 cursor-pointer hover:shadow-lg transition-all hover:scale-105 hover:border-primary"
+                  className="p-3 sm:p-4 md:p-6 cursor-pointer hover:shadow-lg transition-all hover:scale-105 hover:border-primary"
                   onClick={() => handleTypeSelect("folder")}
                 >
-                  <div className="flex flex-col items-center gap-3 text-center">
-                    <div className="h-16 w-16 rounded-full bg-gray-300 dark:bg-gray-900/30 flex items-center justify-center">
-                      <FolderTypeIcon className="h-8 w-8 text-gray-600 dark:text-gray-400" />
+                  <div className="flex flex-col items-center gap-2 sm:gap-3 text-center">
+                    <div className="h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16 rounded-full bg-gray-300 dark:bg-gray-900/30 flex items-center justify-center">
+                      <FolderTypeIcon className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-gray-600 dark:text-gray-400" />
                     </div>
                     <div>
-                      <h3 className="font-semibold">Dossier</h3>
-                      <p className="text-xs text-muted-foreground mt-1">
+                      <h3 className="font-semibold text-xs sm:text-sm md:text-base">Dossier</h3>
+                      <p className="text-xs text-muted-foreground mt-1 hidden sm:block">
                         Nouveau dossier
                       </p>
                     </div>
@@ -322,7 +322,7 @@ export const CreateFileModal: React.FC<CreateFileModalProps> = ({
                     <div className="space-y-2">
                       <Label>Fichier à uploader</Label>
                       <div
-                        className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+                        className={`border-2 border-dashed rounded-lg p-4 sm:p-6 md:p-8 text-center transition-colors ${
                           isDragging
                             ? "border-primary bg-primary/5"
                             : uploadedFile
@@ -334,16 +334,16 @@ export const CreateFileModal: React.FC<CreateFileModalProps> = ({
                         onDragLeave={handleDragLeave}
                       >
                         {uploadedFile ? (
-                          <div className="space-y-4">
-                            <div className="flex items-center justify-center gap-2">
+                          <div className="space-y-3 sm:space-y-4">
+                            <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
                               {selectedType === "png" ? (
-                                <Image className="h-8 w-8 text-green-600" />
+                                <Image className="h-6 w-6 sm:h-8 sm:w-8 text-green-600 flex-shrink-0" />
                               ) : (
-                                <FileTypeIcon className="h-8 w-8 text-red-600" />
+                                <FileTypeIcon className="h-6 w-6 sm:h-8 sm:w-8 text-red-600 flex-shrink-0" />
                               )}
-                              <div className="text-left">
-                                <p className="font-medium">{uploadedFile.name}</p>
-                                <p className="text-sm text-muted-foreground">
+                              <div className="text-center sm:text-left min-w-0">
+                                <p className="font-medium text-xs sm:text-sm truncate">{uploadedFile.name}</p>
+                                <p className="text-xs text-muted-foreground">
                                   {(uploadedFile.size / 1024).toFixed(2)} KB
                                 </p>
                               </div>
@@ -353,24 +353,26 @@ export const CreateFileModal: React.FC<CreateFileModalProps> = ({
                               variant="outline"
                               size="sm"
                               onClick={() => setUploadedFile(null)}
-                              className="gap-2"
+                              className="gap-2 w-full sm:w-auto"
                             >
-                              <X className="h-4 w-4" />
+                              <X className="h-3 w-3 sm:h-4 sm:w-4" />
                               Supprimer
                             </Button>
                           </div>
                         ) : (
                           <>
-                            <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                            <p className="text-sm text-muted-foreground mb-2">
+                            <Upload className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 mx-auto mb-2 sm:mb-4 text-muted-foreground" />
+                            <p className="text-xs sm:text-sm text-muted-foreground mb-2">
                               Glissez-déposez votre fichier ici ou
                             </p>
                             <Button
                               type="button"
                               variant="outline"
+                              size="sm"
                               onClick={() =>
                                 document.getElementById("file-input")?.click()
                               }
+                              className="w-full sm:w-auto"
                             >
                               Parcourir les fichiers
                             </Button>
